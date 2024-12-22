@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:ticket_plane_app/screen/login/data/user.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +17,44 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
   final _key = GlobalKey<FormState>();
   bool _obscurePassword = true;
+  bool _hasPasswordText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    passwordController.addListener(() {
+      setState(() {
+        _hasPasswordText = passwordController.text.isNotEmpty;
+      });
+    });
+  }
+
+  Future<void> _login() async {
+    if (_key.currentState!.validate()) {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/users'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'username': emailController.text,
+          'password': passwordController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // If the server returns a 200 OK response, parse the JSON.
+        final user = User.fromJson(jsonDecode(response.body));
+        print("Login successful: ${user.toString()}");
+        //context.go('/home');
+      } else {
+        // If the server did not return a 200 OK response, throw an exception.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to login')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,19 +145,21 @@ class _LoginScreenState extends State<LoginScreen> {
                               hintText: 'Password',
                               prefixIcon:
                                   const Icon(Icons.lock, color: Colors.grey),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? FontAwesomeIcons.eyeSlash
-                                      : FontAwesomeIcons.eye,
-                                  color: Colors.grey,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _obscurePassword = !_obscurePassword;
-                                  });
-                                },
-                              ),
+                              suffixIcon: _hasPasswordText
+                                  ? IconButton(
+                                      icon: Icon(
+                                        _obscurePassword
+                                            ? FontAwesomeIcons.eyeSlash
+                                            : FontAwesomeIcons.eye,
+                                        color: Colors.grey,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _obscurePassword = !_obscurePassword;
+                                        });
+                                      },
+                                    )
+                                  : null,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30),
                                 borderSide: BorderSide.none,
@@ -129,9 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // Login button
                     ElevatedButton(
-                      onPressed: () {
-                        // TODO: Add login logic
-                      },
+                      onPressed: _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.purple,

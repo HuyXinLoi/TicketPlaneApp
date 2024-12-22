@@ -3,7 +3,7 @@
     {
       "user_id": 1,
       "username": "nguyen.an",
-      "password": "hashed_password_1",
+      "password": "1",
       "email": "nguyen.an@example.com",
       "role": "customer",
       "is_active": true
