@@ -1,0 +1,329 @@
+{
+  "users": [
+    {
+      "user_id": 1,
+      "username": "nguyen.an",
+      "password": "hashed_password_1",
+      "email": "nguyen.an@example.com",
+      "role": "customer",
+      "is_active": true
+    },
+    {
+      "user_id": 2,
+      "username": "le.trang",
+      "password": "hashed_password_2",
+      "email": "le.trang@example.com",
+      "role": "customer",
+      "is_active": true
+    },
+    {
+      "user_id": 3,
+      "username": "admin01",
+      "password": "hashed_password_3",
+      "email": "admin01@example.com",
+      "role": "admin",
+      "is_active": true
+    },
+    {
+      "user_id": 4,
+      "username": "pham.minh",
+      "password": "hashed_password_4",
+      "email": "pham.minh@example.com",
+      "role": "customer",
+      "is_active": false
+    },
+    {
+      "user_id": 5,
+      "username": "hoang.mai",
+      "password": "hashed_password_5",
+      "email": "hoang.mai@example.com",
+      "role": "customer",
+      "is_active": true
+    }
+  ],
+  "customers": [
+    {
+      "customer_id": 1,
+      "user_id": 1,
+      "first_name": "Nguyen",
+      "last_name": "An",
+      "email": "nguyen.an@example.com",
+      "phone": "+84123456789",
+      "passport_number": "A12345678",
+      "address": "123 Pham Hung, Hanoi"
+    },
+    {
+      "customer_id": 2,
+      "user_id": 2,
+      "first_name": "Le",
+      "last_name": "Trang",
+      "email": "le.trang@example.com",
+      "phone": "+84987654321",
+      "passport_number": "B98765432",
+      "address": "456 Le Duan, Ho Chi Minh City"
+    },
+    {
+      "customer_id": 3,
+      "user_id": 3,
+      "first_name": "Tran",
+      "last_name": "Bich",
+      "email": "tran.bich@example.com",
+      "phone": "+84111223344",
+      "passport_number": "C11223344",
+      "address": "789 Xuan Thuy, Hanoi"
+    },
+    {
+      "customer_id": 4,
+      "user_id": 4,
+      "first_name": "Pham",
+      "last_name": "Minh",
+      "email": "pham.minh@example.com",
+      "phone": "+84998765432",
+      "passport_number": "D22334455",
+      "address": "123 Ba Trieu, Hanoi"
+    },
+    {
+      "customer_id": 5,
+      "user_id": 5,
+      "first_name": "Hoang",
+      "last_name": "Mai",
+      "email": "hoang.mai@example.com",
+      "phone": "+84887766554",
+      "passport_number": "E55667788",
+      "address": "101 Nguyen Thi Minh Khai, Ho Chi Minh City"
+    }
+  ],
+  "flights": [
+    {
+      "flight_id": 1,
+      "departure_city": "Hanoi",
+      "arrival_city": "Ho Chi Minh City",
+      "departure_time": "2024-12-25 08:00:00",
+      "arrival_time": "2024-12-25 10:30:00",
+      "airline": "Vietnam Airlines",
+      "price": 1500000,
+      "available_seats": 50
+    },
+    {
+      "flight_id": 2,
+      "departure_city": "Ho Chi Minh City",
+      "arrival_city": "Hanoi",
+      "departure_time": "2024-12-26 14:00:00",
+      "arrival_time": "2024-12-26 16:30:00",
+      "airline": "VietJet Air",
+      "price": 1200000,
+      "available_seats": 45
+    },
+    {
+      "flight_id": 3,
+      "departure_city": "Hanoi",
+      "arrival_city": "Da Nang",
+      "departure_time": "2024-12-27 07:30:00",
+      "arrival_time": "2024-12-27 09:00:00",
+      "airline": "Bamboo Airways",
+      "price": 1000000,
+      "available_seats": 60
+    },
+    {
+      "flight_id": 4,
+      "departure_city": "Da Nang",
+      "arrival_city": "Hanoi",
+      "departure_time": "2024-12-28 18:00:00",
+      "arrival_time": "2024-12-28 19:30:00",
+      "airline": "Vietnam Airlines",
+      "price": 1400000,
+      "available_seats": 40
+    },
+    {
+      "flight_id": 5,
+      "departure_city": "Ho Chi Minh City",
+      "arrival_city": "Da Nang",
+      "departure_time": "2024-12-29 09:00:00",
+      "arrival_time": "2024-12-29 11:30:00",
+      "airline": "VietJet Air",
+      "price": 1100000,
+      "available_seats": 50
+    }
+  ],
+  "tickets": [
+    {
+      "ticket_id": 1,
+      "flight_id": 1,
+      "customer_id": 1,
+      "seat_number": "12A",
+      "ticket_price": 1500000,
+      "status": "paid"
+    },
+    {
+      "ticket_id": 2,
+      "flight_id": 2,
+      "customer_id": 2,
+      "seat_number": "3B",
+      "ticket_price": 1200000,
+      "status": "paid"
+    },
+    {
+      "ticket_id": 3,
+      "flight_id": 3,
+      "customer_id": 3,
+      "seat_number": "8C",
+      "ticket_price": 1000000,
+      "status": "paid"
+    },
+    {
+      "ticket_id": 4,
+      "flight_id": 4,
+      "customer_id": 4,
+      "seat_number": "15D",
+      "ticket_price": 1400000,
+      "status": "pending"
+    },
+    {
+      "ticket_id": 5,
+      "flight_id": 5,
+      "customer_id": 5,
+      "seat_number": "22E",
+      "ticket_price": 1100000,
+      "status": "paid"
+    }
+  ],
+  "bookings": [
+    {
+      "booking_id": 1,
+      "customer_id": 1,
+      "booking_date": "2024-12-20",
+      "total_price": 1500000,
+      "status": "paid"
+    },
+    {
+      "booking_id": 2,
+      "customer_id": 2,
+      "booking_date": "2024-12-21",
+      "total_price": 1200000,
+      "status": "paid"
+    },
+    {
+      "booking_id": 3,
+      "customer_id": 3,
+      "booking_date": "2024-12-22",
+      "total_price": 1000000,
+      "status": "paid"
+    },
+    {
+      "booking_id": 4,
+      "customer_id": 4,
+      "booking_date": "2024-12-23",
+      "total_price": 1400000,
+      "status": "pending"
+    },
+    {
+      "booking_id": 5,
+      "customer_id": 5,
+      "booking_date": "2024-12-24",
+      "total_price": 1100000,
+      "status": "paid"
+    }
+  ],
+  "payments": [
+    {
+      "payment_id": 1,
+      "booking_id": 1,
+      "payment_date": "2024-12-20",
+      "amount": 1500000,
+      "payment_method": "credit_card"
+    },
+    {
+      "payment_id": 2,
+      "booking_id": 2,
+      "payment_date": "2024-12-21",
+      "amount": 1200000,
+      "payment_method": "paypal"
+    },
+    {
+      "payment_id": 3,
+      "booking_id": 3,
+      "payment_date": "2024-12-22",
+      "amount": 1000000,
+      "payment_method": "bank_transfer"
+    },
+    {
+      "payment_id": 4,
+      "booking_id": 4,
+      "payment_date": "2024-12-23",
+      "amount": 1400000,
+      "payment_method": "credit_card"
+    },
+    {
+      "payment_id": 5,
+      "booking_id": 5,
+      "payment_date": "2024-12-24",
+      "amount": 1100000,
+      "payment_method": "paypal"
+    }
+  ],
+  "flight_history": [
+    {
+      "history_id": 1,
+      "flight_id": 1,
+      "status": "completed",
+      "notes": "On time"
+    },
+    {
+      "history_id": 2,
+      "flight_id": 2,
+      "status": "completed",
+      "notes": "Delayed by 30 minutes"
+    },
+    {
+      "history_id": 3,
+      "flight_id": 3,
+      "status": "completed",
+      "notes": "On time"
+    },
+    {
+      "history_id": 4,
+      "flight_id": 4,
+      "status": "cancelled",
+      "notes": "Due to technical issues"
+    },
+    {
+      "history_id": 5,
+      "flight_id": 5,
+      "status": "completed",
+      "notes": "On time"
+    }
+  ],
+  "airlines": [
+    {
+      "airline_id": 1,
+      "name": "Vietnam Airlines",
+      "contact_info": "1800-1100"
+    },
+    {
+      "airline_id": 2,
+      "name": "VietJet Air",
+      "contact_info": "1900-1886"
+    },
+    {
+      "airline_id": 3,
+      "name": "Bamboo Airways",
+      "contact_info": "1900-1550"
+    }
+  ],
+  "discounts": [
+    {
+      "discount_id": 1,
+      "code": "XMAS2024",
+      "description": "Christmas discount",
+      "discount_percentage": 10,
+      "expiry_date": "2024-12-31"
+    },
+    {
+      "discount_id": 2,
+      "code": "NEWYEAR2024",
+      "description": "New Year discount",
+      "discount_percentage": 15,
+      "expiry_date": "2025-01-10"
+    }
+  ]
+}
