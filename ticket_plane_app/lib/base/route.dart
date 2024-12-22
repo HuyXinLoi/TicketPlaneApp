@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:ticket_plane_app/screen/introduction/introduction_screen.dart';
 import 'package:ticket_plane_app/screen/login/login_screen.dart';
+import 'package:ticket_plane_app/screen/navigationbar/bottom_navigationbar_screen.dart';
 
 class AppRouter {
   final GoRouter router = GoRouter(
@@ -12,6 +13,10 @@ class AppRouter {
       GoRoute(
         path: '/login',
         builder: (context, state) => LoginScreen(),
+      ),
+      GoRoute(
+        path: '/nav',
+        builder: (context, state) => BottomNavBar(),
       ),
     ],
   );
