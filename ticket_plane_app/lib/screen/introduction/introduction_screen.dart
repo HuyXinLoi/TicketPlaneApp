@@ -39,13 +39,19 @@ class OnBoardingPageState extends State<OnBoardingPage> {
         PageViewModel(
           title: "Welcome",
           body: "This is an example onboarding screen.",
-          image: _buildImage('img1.jpg'),
+          image: _buildImage('imeges/intro1.jpg'),
           decoration: pageDecoration,
         ),
         PageViewModel(
           title: "Explore",
           body: "Discover all the features of our app.",
-          image: _buildImage('img2.jpg'),
+          image: _buildImage('images/intro2.jpg'),
+          decoration: pageDecoration,
+        ),
+        PageViewModel(
+          title: "Explore",
+          body: "Discover all the features of our app.",
+          image: _buildImage('images/ỉntro3.jpg'),
           decoration: pageDecoration,
         ),
       ],
