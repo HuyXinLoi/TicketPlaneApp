@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:ticket_plane_app/base/end_point.dart';
 import 'package:ticket_plane_app/screen/login/data/user.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -31,27 +32,42 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (_key.currentState!.validate()) {
-      final response = await http.post(
-        Uri.parse('http://localhost:3000/users'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
-          'username': emailController.text,
-          'password': passwordController.text,
-        }),
-      );
+      final String username = emailController.text.trim();
+      final String password = passwordController.text.trim();
 
-      if (response.statusCode == 200) {
-        // If the server returns a 200 OK response, parse the JSON.
-        final user = User.fromJson(jsonDecode(response.body));
-        print("Login successful: ${user.toString()}");
-        //context.go('/home');
-      } else {
-        // If the server did not return a 200 OK response, throw an exception.
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to login')),
+      try {
+        final response = await http.get(
+          Uri.parse(EndPoint.user),
         );
+
+        if (response.statusCode == 200) {
+          final List<dynamic> users = jsonDecode(response.body);
+          final user = users.firstWhere(
+            (u) => u['username'] == username,
+            orElse: () => null,
+          );
+
+          if (user != null && user['password'] == password) {
+            final userData = UserElement.fromJson(user);
+            print("Login successful: ${userData.toString()}");
+            context.go('/home');
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content:
+                      Text('Tên đăng nhập hoặc mật khẩu không chính xác.')),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${response.reasonPhrase}')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred: $e')),
+        );
+        print("Error during login: $e");
       }
     }
   }
