@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/base/end_point.dart';
 import 'package:ticket_plane_app/screen/login/data/user.dart';
 
@@ -23,11 +24,24 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    _checkLoginStatus();
     passwordController.addListener(() {
       setState(() {
         _hasPasswordText = passwordController.text.isNotEmpty;
       });
     });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedUsername = prefs.getString('username');
+    final savedPassword = prefs.getString('password');
+
+    if (savedUsername != null && savedPassword != null) {
+      // Bạn có thể kiểm tra thêm với API nếu cần
+      print('User is already logged in: \$savedUsername');
+      context.go('/home'); // Chuyển tới màn hình chính
+    }
   }
 
   Future<void> _login() async {
@@ -49,7 +63,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
           if (user != null && user['password'] == password) {
             final userData = UserElement.fromJson(user);
-            print("Login successful: ${userData.toString()}");
+
+            // Lưu thông tin vào SharedPreferences
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('username', username);
+            await prefs.setString('password', password);
+
+            print("Login successful: \${userData.toString()}");
             context.go('/home');
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -60,14 +80,14 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${response.reasonPhrase}')),
+            SnackBar(content: Text('Error: \${response.reasonPhrase}')),
           );
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: $e')),
+          SnackBar(content: Text('An error occurred: \$e')),
         );
-        print("Error during login: $e");
+        print("Error during login: \$e");
       }
     }
   }
