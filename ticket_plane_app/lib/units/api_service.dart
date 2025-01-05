@@ -24,15 +24,6 @@ class ApiService {
     }
   }
 
-  Future<List<dynamic>> getPopularDestinations() async {
-    final response = await http.get(Uri.parse('$baseUrl/popular_destinations'));
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to load popular destinations');
-    }
-  }
-
   Future<List<dynamic>> getCities() async {
     final response = await http.get(Uri.parse('$baseUrl/cities'));
     if (response.statusCode == 200) {
@@ -77,5 +68,25 @@ class ApiService {
       throw Exception('Failed to load airlines');
     }
   }
-  // Thêm các hàm get khác tương tự (getCities, getUsers, getCustomers, getTickets, ...)
+
+  Future<Map<String, dynamic>> addUser(Map<String, dynamic> user) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/users'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(user),
+    );
+
+    if (response.statusCode == 201) {
+      // Nếu server trả về status code 201 CREATED, chuyển đổi response body sang Map
+      return json.decode(response.body);
+    } else {
+      // Nếu server trả về status code khác, throw exception với error message
+      throw Exception(
+          'Failed to add user: ${response.statusCode} - ${response.body}');
+    }
+  }
 }
+  // Thêm các hàm get khác tương tự (getCities, getUsers, getCustomers, getTickets, ...)
+

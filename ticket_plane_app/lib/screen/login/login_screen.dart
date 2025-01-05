@@ -13,51 +13,94 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final _key = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
   bool _hasPasswordText = false;
 
   @override
   void initState() {
     super.initState();
-    passwordController.addListener(() {
+    _passwordController.addListener(() {
       setState(() {
-        _hasPasswordText = passwordController.text.isNotEmpty;
+        _hasPasswordText = _passwordController.text.isNotEmpty;
       });
     });
   }
 
-  Future<void> _login() async {
-    if (_key.currentState!.validate()) {
-      final response = await http.post(
-        Uri.parse('http://localhost:3000/users'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
-          'username': emailController.text,
-          'password': passwordController.text,
-        }),
-      );
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
-      if (response.statusCode == 200) {
-        // If the server returns a 200 OK response, parse the JSON.
-        final user = User.fromJson(jsonDecode(response.body));
-        print("Login successful: ${user.toString()}");
-        //context.go('/home');
-      } else {
-        // If the server did not return a 200 OK response, throw an exception.
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to login')),
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        final response = await http.post(
+          Uri.parse(
+              'http://10.0.2.2:3000/users'), // Giả sử endpoint vẫn là /login
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(<String, String>{
+            'username': _emailController.text,
+            'password': _passwordController.text,
+          }),
         );
+
+        if (response.statusCode == 200) {
+          // Login thành công
+          // Phân tích JSON response thành List<UserElement>
+          final List<dynamic> userListJson = jsonDecode(response.body);
+          final List<UserElement> userList = userListJson
+              .map((userJson) => UserElement.fromJson(userJson))
+              .toList();
+
+          // In thông tin user đầu tiên (nếu có)
+          if (userList.isNotEmpty) {
+            print("Login successful: ${userList[0].toString()}");
+
+            // Lưu thông tin user (hoặc token) vào storage (nếu cần)
+            // ...
+
+            // Chuyển hướng đến màn hình Home
+            if (mounted) {
+              context.go('/nav');
+            }
+          } else {
+            print("Login successful but user list is empty.");
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text('Login successful but no user data found')),
+              );
+            }
+          }
+        } else {
+          // Login thất bại
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to login: ${response.body}')),
+            );
+          }
+        }
+      } catch (e) {
+        // Lỗi kết nối hoặc lỗi khác
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+        }
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Phần build giữ nguyên không thay đổi
     return Scaffold(
       body: Stack(
         children: [
@@ -102,16 +145,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 40),
 
-                    // Username field
+                    // Form
                     Form(
-                      key: _key,
+                      key: _formKey,
                       child: Column(
                         children: [
+                          // Username field
                           TextFormField(
-                            controller: emailController,
+                            controller: _emailController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
+                                return 'Please enter your username';
                               }
                               return null;
                             },
@@ -131,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Password field with eye icon
                           TextFormField(
-                            controller: passwordController,
+                            controller: _passwordController,
                             obscureText: _obscurePassword,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -253,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Sign up link
                     TextButton(
                       onPressed: () {
-                        // TODO: Navigate to sign-up screen
+                        context.go('/signup');
                       },
                       child: RichText(
                         text: TextSpan(
@@ -286,7 +330,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// Widget for social icon buttons
+// Widget for social icon buttons (giữ nguyên)
 class SocialIconButton extends StatelessWidget {
   final IconData icon;
   final Color color;
