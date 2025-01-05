@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/base/end_point.dart';
 import 'package:ticket_plane_app/screen/login/data/user.dart';
 
@@ -14,94 +15,85 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final _key = GlobalKey<FormState>();
   bool _obscurePassword = true;
   bool _hasPasswordText = false;
 
   @override
   void initState() {
     super.initState();
-    _passwordController.addListener(() {
+    _checkLoginStatus();
+    passwordController.addListener(() {
       setState(() {
-        _hasPasswordText = _passwordController.text.isNotEmpty;
+        _hasPasswordText = passwordController.text.isNotEmpty;
       });
     });
   }
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  Future<void> _checkLoginStatus() async {
+    // final prefs = await SharedPreferences.getInstance();
+    // final savedUsername = prefs.getString('username');
+    // final savedPassword = prefs.getString('password');
+
+    // if (savedUsername != null && savedPassword != null) {
+    // // Bạn có thể kiểm tra thêm với API nếu cần
+    // print('User is already logged in: \$savedUsername');
+    // context.go('/home'); // Chuyển tới màn hình chính
+    //}
   }
 
   Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
+    if (_key.currentState!.validate()) {
+      final String username = emailController.text.trim();
+      final String password = passwordController.text.trim();
+
       try {
-        final response = await http.post(
-          Uri.parse(
-              'http://10.0.2.2:3000/users'), // Giả sử endpoint vẫn là /login
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-          },
-          body: jsonEncode(<String, String>{
-            'username': _emailController.text,
-            'password': _passwordController.text,
-          }),
+        final response = await http.get(
+          Uri.parse(EndPoint.user),
         );
 
         if (response.statusCode == 200) {
-          // Login thành công
-          // Phân tích JSON response thành List<UserElement>
-          final List<dynamic> userListJson = jsonDecode(response.body);
-          final List<UserElement> userList = userListJson
-              .map((userJson) => UserElement.fromJson(userJson))
-              .toList();
+          final List<dynamic> users = jsonDecode(response.body);
+          final user = users.firstWhere(
+            (u) => u['username'] == username,
+            orElse: () => null,
+          );
 
-          // In thông tin user đầu tiên (nếu có)
-          if (userList.isNotEmpty) {
-            print("Login successful: ${userList[0].toString()}");
+          if (user != null && user['password'] == password) {
+            final userData = UserElement.fromJson(user);
 
-            // Lưu thông tin user (hoặc token) vào storage (nếu cần)
-            // ...
+            // Lưu thông tin vào SharedPreferences
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('username', username);
+            await prefs.setString('password', password);
 
-            // Chuyển hướng đến màn hình Home
-            if (mounted) {
-              context.go('/nav');
-            }
+            print("Login successful: \${userData.toString()}");
+            context.go('/nav');
           } else {
-            print("Login successful but user list is empty.");
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text('Login successful but no user data found')),
-              );
-            }
-          }
-        } else {
-          // Login thất bại
-          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to login: ${response.body}')),
+              const SnackBar(
+                  content:
+                      Text('Tên đăng nhập hoặc mật khẩu không chính xác.')),
             );
           }
-        }
-      } catch (e) {
-        // Lỗi kết nối hoặc lỗi khác
-        if (mounted) {
+        } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
+            SnackBar(content: Text('Error: \${response.reasonPhrase}')),
           );
         }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred: $e')),
+        );
+        print("Error during login: " + e.toString());
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Phần build giữ nguyên không thay đổi
     return Scaffold(
       body: Stack(
         children: [
@@ -146,17 +138,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 40),
 
-                    // Form
+                    // Username field
                     Form(
-                      key: _formKey,
+                      key: _key,
                       child: Column(
                         children: [
-                          // Username field
                           TextFormField(
-                            controller: _emailController,
+                            controller: emailController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter your username';
+                                return 'Please enter your email';
                               }
                               return null;
                             },
@@ -176,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Password field with eye icon
                           TextFormField(
-                            controller: _passwordController,
+                            controller: passwordController,
                             obscureText: _obscurePassword,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -298,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Sign up link
                     TextButton(
                       onPressed: () {
-                        context.go('/signup');
+                        // TODO: Navigate to sign-up screen
                       },
                       child: RichText(
                         text: TextSpan(
@@ -331,7 +322,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// Widget for social icon buttons (giữ nguyên)
+// Widget for social icon buttons
 class SocialIconButton extends StatelessWidget {
   final IconData icon;
   final Color color;
