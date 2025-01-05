@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -21,6 +22,19 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     internetConnection();
+    checkLogin();
+  }
+
+  void checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedUsername = prefs.getString('username');
+    final savedPassword = prefs.getString('password');
+
+    if (savedUsername != null && savedPassword != null) {
+      // Bạn có thể kiểm tra thêm với API nếu cần
+      print('User is already logged in: \$savedUsername');
+      context.go('/nav'); // Chuyển tới màn hình chính
+    }
   }
 
   void internetConnection() {

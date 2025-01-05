@@ -5,7 +5,6 @@ import '../search/search_screen.dart';
 // Import các class từ thư mục data
 import 'data/discount.dart';
 import 'data/flight.dart';
-import 'data/popular_destination.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({super.key});
@@ -18,11 +17,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // Dữ liệu
   List<Discount> discounts = [];
   List<Flight> flights = [];
-  List<PopularDestination> popularDestinations = [];
+  List<String> arrivalCities = [];
 
   // Khởi tạo ApiService
-  final apiService = ApiService('http://10.0.2.2:3000');
-
+  final apiService = ApiService("http://10.0.2.2:3000");
   @override
   void initState() {
     super.initState();
@@ -40,18 +38,12 @@ class _HomeScreenState extends State<HomeScreen> {
       final flightsList = (await apiService.getFlights())
           .map((item) => Flight.fromJson(item))
           .toList();
-
-      // Lấy danh sách popular destinations
-      final popularDestinationsList =
-          (await apiService.getPopularDestinations())
-              .map((item) => PopularDestination.fromJson(item))
-              .toList();
-
+      arrivalCities =
+          flightsList.map((flight) => flight.arrivalCity).toSet().toList();
       // Cập nhật state
       setState(() {
         discounts = discountsList;
         flights = flightsList.sublist(0, 3);
-        popularDestinations = popularDestinationsList;
       });
     } catch (e) {
       print('Error loading data: $e');
@@ -200,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           // Banner Khuyến mãi (Khám phá)
                           const Text(
-                            'Khám phá',
+                            'Khuyến mãi',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -221,34 +213,30 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                             ),
                           ),
-
                           const SizedBox(height: 30),
 
-                          // Điểm đến phổ biến
+                          // Điểm đến
                           const Text(
-                            'Điểm đến phổ biến',
+                            'Điểm đến',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 10),
-                          GridView.count(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            crossAxisCount: 2,
-                            childAspectRatio: 1.5,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 10,
-                            children: List.generate(
-                              popularDestinations.length,
-                              (index) => _buildDestinationCard(
-                                popularDestinations[index].name,
-                                popularDestinations[index].image,
-                              ),
+                          SizedBox(
+                            height: 100, // Adjust height as needed
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: arrivalCities.length,
+                              itemBuilder: (context, index) {
+                                return _buildDestinationCard(
+                                  arrivalCities[index],
+                                  'https://via.placeholder.com/80x60?text=${arrivalCities[index].substring(0, 3).toUpperCase()}', // Placeholder image
+                                );
+                              },
                             ),
                           ),
-
                           const SizedBox(height: 30),
 
                           // Các chuyến bay (Gợi ý chuyến bay)
@@ -353,11 +341,6 @@ class _HomeScreenState extends State<HomeScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // Image.network(
-              //   'https://via.placeholder.com/50x50?text=${flight.airline.substring(0, 2).toUpperCase()}', // Thay bằng logo hãng
-              //   width: 30,
-              //   height: 30,
-              // ),
               Text(flight.airline),
               const SizedBox(height: 4),
               Text('${flight.price.toStringAsFixed(0)} VND',
@@ -372,6 +355,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildDestinationCard(String title, String imageUrl) {
     return Container(
+      width: 100, // Set width
+      margin: const EdgeInsets.only(right: 10),
       decoration: BoxDecoration(
         color: const Color(0xFFEEEEEE),
         borderRadius: BorderRadius.circular(10),
@@ -382,6 +367,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Image.network(
             imageUrl,
             height: 60,
+            width: 80,
             fit: BoxFit.cover,
           ),
           const SizedBox(height: 5),

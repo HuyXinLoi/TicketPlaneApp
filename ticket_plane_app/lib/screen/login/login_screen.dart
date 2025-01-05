@@ -38,9 +38,9 @@ class _LoginScreenState extends State<LoginScreen> {
     // final savedPassword = prefs.getString('password');
 
     // if (savedUsername != null && savedPassword != null) {
-    // Bạn có thể kiểm tra thêm với API nếu cần
-    print('User is already logged in: \$savedUsername');
-    context.go('/home'); // Chuyển tới màn hình chính
+    // // Bạn có thể kiểm tra thêm với API nếu cần
+    // print('User is already logged in: \$savedUsername');
+    // context.go('/home'); // Chuyển tới màn hình chính
     //}
   }
 
@@ -65,12 +65,12 @@ class _LoginScreenState extends State<LoginScreen> {
             final userData = UserElement.fromJson(user);
 
             // Lưu thông tin vào SharedPreferences
-            // final prefs = await SharedPreferences.getInstance();
-            // await prefs.setString('username', username);
-            // await prefs.setString('password', password);
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('username', username);
+            await prefs.setString('password', password);
 
             print("Login successful: \${userData.toString()}");
-            context.go('/home');
+            context.go('/nav');
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -85,9 +85,9 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: \$e')),
+          SnackBar(content: Text('An error occurred: $e')),
         );
-        print("Error during login: \$e");
+        print("Error during login: " + e.toString());
       }
     }
   }
