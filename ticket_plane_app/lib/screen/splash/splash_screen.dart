@@ -1,5 +1,10 @@
+import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:go_router/go_router.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -7,16 +12,74 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  late StreamSubscription _subscription;
+  bool isDeviceConnection = false;
+  bool isAlertShown = false;
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    _navigateToHome();
+    internetConnection();
   }
 
-  Future<void> _navigateToHome() async {
-    await Future.delayed(
-        const Duration(seconds: 3)); // Thời gian hiển thị splash
-    context.go('/intro'); // Chuyển đến màn hình chính
+  void internetConnection() {
+    _subscription = Connectivity().onConnectivityChanged.listen((result) async {
+      isDeviceConnection = await InternetConnectionChecker().hasConnection;
+      if (!isDeviceConnection && !isAlertShown) {
+        showDialogBox();
+      } else if (isDeviceConnection) {
+        setState(() {
+          isLoading = false;
+        });
+        await Future.delayed(Duration(seconds: 5));
+        context.go('/intro');
+      }
+    });
+  }
+
+  void showDialogBox() {
+    setState(() {
+      isLoading = false;
+    });
+    showCupertinoDialog(
+      context: context,
+      builder: (context) {
+        return CupertinoAlertDialog(
+          title: Text('Your connection is lost'),
+          content: Text('Please check your connection'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                setState(() {
+                  isAlertShown = false;
+                  isLoading = true;
+                });
+                isDeviceConnection =
+                    await InternetConnectionChecker().hasConnection;
+                Navigator.pop(context);
+                if (isDeviceConnection) {
+                  await Future.delayed(Duration(seconds: 5));
+                  context.go('/intro');
+                } else {
+                  showDialogBox();
+                }
+              },
+              child: Text('OK'),
+            )
+          ],
+        );
+      },
+    );
+    setState(() {
+      isAlertShown = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
   }
 
   Widget _buildImage(String assetName, [double width = 300]) {
@@ -30,16 +93,21 @@ class _SplashScreenState extends State<SplashScreen> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color.fromARGB(255, 46, 24, 240),
-              Color.fromARGB(255, 61, 166, 252),
+              Color.fromARGB(255, 148, 183, 236),
+              Color.fromARGB(255, 237, 240, 241),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
         child: Center(
-          child: _buildImage('images/logo.png'),
-        ),
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildImage('images/logo.png'),
+            CircularProgressIndicator()
+          ],
+        )),
       ),
     );
   }

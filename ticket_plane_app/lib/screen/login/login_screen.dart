@@ -33,15 +33,15 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedUsername = prefs.getString('username');
-    final savedPassword = prefs.getString('password');
+    // final prefs = await SharedPreferences.getInstance();
+    // final savedUsername = prefs.getString('username');
+    // final savedPassword = prefs.getString('password');
 
-    if (savedUsername != null && savedPassword != null) {
-      // Bạn có thể kiểm tra thêm với API nếu cần
-      print('User is already logged in: \$savedUsername');
-      context.go('/home'); // Chuyển tới màn hình chính
-    }
+    // if (savedUsername != null && savedPassword != null) {
+    // Bạn có thể kiểm tra thêm với API nếu cần
+    print('User is already logged in: \$savedUsername');
+    context.go('/home'); // Chuyển tới màn hình chính
+    //}
   }
 
   Future<void> _login() async {
@@ -65,9 +65,9 @@ class _LoginScreenState extends State<LoginScreen> {
             final userData = UserElement.fromJson(user);
 
             // Lưu thông tin vào SharedPreferences
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('username', username);
-            await prefs.setString('password', password);
+            // final prefs = await SharedPreferences.getInstance();
+            // await prefs.setString('username', username);
+            // await prefs.setString('password', password);
 
             print("Login successful: \${userData.toString()}");
             context.go('/home');
