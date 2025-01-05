@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ticket_plane_app/screen/home/home_screen.dart';
+import 'package:ticket_plane_app/screen/profile/profile_screen.dart';
 import 'package:ticket_plane_app/screen/search/search_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
@@ -15,7 +16,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const HomeScreen(),
     const SearchScreen(),
     const Center(child: Text("Tickets")),
-    const Center(child: Text("Profile"))
+    const ProfileScreen(),
   ];
 
   //change our index for BottomNavBar

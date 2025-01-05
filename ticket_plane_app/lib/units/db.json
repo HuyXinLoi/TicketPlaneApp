@@ -50,7 +50,8 @@
       "email": "nguyen.an@example.com",
       "phone": "+84123456789",
       "passport_number": "A12345678",
-      "address": "123 Pham Hung, Hanoi"
+      "address": "123 Pham Hung, Hanoi",
+      "date_of_birth": "1990-05-15"
     },
     {
       "customer_id": 2,
@@ -60,7 +61,8 @@
       "email": "le.trang@example.com",
       "phone": "+84987654321",
       "passport_number": "B98765432",
-      "address": "456 Le Duan, Ho Chi Minh City"
+      "address": "456 Le Duan, Ho Chi Minh City",
+      "date_of_birth": "1990-05-15"
     },
     {
       "customer_id": 3,
@@ -70,7 +72,8 @@
       "email": "tran.bich@example.com",
       "phone": "+84111223344",
       "passport_number": "C11223344",
-      "address": "789 Xuan Thuy, Hanoi"
+      "address": "789 Xuan Thuy, Hanoi",
+      "date_of_birth": "1990-05-15"
     },
     {
       "customer_id": 4,
@@ -80,7 +83,8 @@
       "email": "pham.minh@example.com",
       "phone": "+84998765432",
       "passport_number": "D22334455",
-      "address": "123 Ba Trieu, Hanoi"
+      "address": "123 Ba Trieu, Hanoi",
+      "date_of_birth": "1990-05-15"
     },
     {
       "customer_id": 5,
@@ -90,7 +94,8 @@
       "email": "hoang.mai@example.com",
       "phone": "+84887766554",
       "passport_number": "E55667788",
-      "address": "101 Nguyen Thi Minh Khai, Ho Chi Minh City"
+      "address": "101 Nguyen Thi Minh Khai, Ho Chi Minh City",
+      "date_of_birth": "1990-05-15"
     }
   ],
   "flights": [
