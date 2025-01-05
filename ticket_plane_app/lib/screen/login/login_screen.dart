@@ -1,5 +1,11 @@
+import 'dart:convert';
+import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ticket_plane_app/base/end_point.dart';
+import 'package:ticket_plane_app/screen/login/data/user.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +19,78 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
   final _key = GlobalKey<FormState>();
   bool _obscurePassword = true;
+  bool _hasPasswordText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+    passwordController.addListener(() {
+      setState(() {
+        _hasPasswordText = passwordController.text.isNotEmpty;
+      });
+    });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    // final prefs = await SharedPreferences.getInstance();
+    // final savedUsername = prefs.getString('username');
+    // final savedPassword = prefs.getString('password');
+
+    // if (savedUsername != null && savedPassword != null) {
+    // // Bạn có thể kiểm tra thêm với API nếu cần
+    // print('User is already logged in: \$savedUsername');
+    // context.go('/home'); // Chuyển tới màn hình chính
+    //}
+  }
+
+  Future<void> _login() async {
+    if (_key.currentState!.validate()) {
+      final String username = emailController.text.trim();
+      final String password = passwordController.text.trim();
+
+      try {
+        final response = await http.get(
+          Uri.parse(EndPoint.user),
+        );
+
+        if (response.statusCode == 200) {
+          final List<dynamic> users = jsonDecode(response.body);
+          final user = users.firstWhere(
+            (u) => u['username'] == username,
+            orElse: () => null,
+          );
+
+          if (user != null && user['password'] == password) {
+            final userData = UserElement.fromJson(user);
+
+            // Lưu thông tin vào SharedPreferences
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('username', username);
+            await prefs.setString('password', password);
+
+            print("Login successful: \${userData.toString()}");
+            context.go('/nav');
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content:
+                      Text('Tên đăng nhập hoặc mật khẩu không chính xác.')),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: \${response.reasonPhrase}')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred: $e')),
+        );
+        print("Error during login: " + e.toString());
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,19 +181,21 @@ class _LoginScreenState extends State<LoginScreen> {
                               hintText: 'Password',
                               prefixIcon:
                                   const Icon(Icons.lock, color: Colors.grey),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? FontAwesomeIcons.eyeSlash
-                                      : FontAwesomeIcons.eye,
-                                  color: Colors.grey,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _obscurePassword = !_obscurePassword;
-                                  });
-                                },
-                              ),
+                              suffixIcon: _hasPasswordText
+                                  ? IconButton(
+                                      icon: Icon(
+                                        _obscurePassword
+                                            ? FontAwesomeIcons.eyeSlash
+                                            : FontAwesomeIcons.eye,
+                                        color: Colors.grey,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _obscurePassword = !_obscurePassword;
+                                        });
+                                      },
+                                    )
+                                  : null,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30),
                                 borderSide: BorderSide.none,
@@ -129,9 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // Login button
                     ElevatedButton(
-                      onPressed: () {
-                        // TODO: Add login logic
-                      },
+                      onPressed: _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.purple,
