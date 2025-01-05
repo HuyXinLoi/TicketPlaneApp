@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -8,6 +10,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Xóa tất cả dữ liệu lưu trữ
+    context.go('/login'); // Điều hướng về màn hình đăng nhập
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,16 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    ),
+                    const SizedBox(width: 48), // Giữ khoảng cách cố định
                     const Text(
                       'Profile',
                       style: TextStyle(
@@ -50,7 +49,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 48),
+                    IconButton(
+                      icon: const Icon(Icons.logout, color: Colors.white),
+                      onPressed: _logout,
+                      tooltip: 'Đăng xuất',
+                    ),
                   ],
                 ),
               ),
@@ -104,11 +107,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          _buildInfoItem(Icons.email, 'Email', 'nguyenvana@example.com'),
-                          _buildInfoItem(Icons.phone, 'Số điện thoại', '+84123456789'),
-                          _buildInfoItem(Icons.location_on, 'Địa chỉ', '123 Đường ABC, Quận XYZ, Thành phố HCM'),
-                          _buildInfoItem(Icons.card_membership, 'Passport', 'A1234567'),
+                          _buildInfoItem(
+                              Icons.email, 'Email', 'nguyenvana@example.com'),
+                          _buildInfoItem(Icons.phone, 'Số điện thoại',
+                              '+84123456789'),
+                          _buildInfoItem(Icons.location_on, 'Địa chỉ',
+                              '123 Đường ABC, Quận XYZ, Thành phố HCM'),
+                          _buildInfoItem(Icons.card_membership, 'Passport',
+                              'A1234567'),
                           _buildInfoItem(Icons.cake, 'Ngày sinh', '01/01/1990'),
+
+                          const SizedBox(height: 30),
+
+                          // Logout Button
+                          Center(
+                            child: ElevatedButton(
+                              onPressed: _logout,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 15, horizontal: 100),
+                                backgroundColor: Colors.redAccent,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              child: const Text(
+                                'Đăng xuất',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
