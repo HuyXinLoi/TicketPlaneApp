@@ -77,6 +77,20 @@ const GetStoreValue = (req, res, next) => {
   next();
 };
 
+const GetCustomerByUserId = (req, res, next) => {
+  const userId = parseInt(req.params.user_id, 10);
+  const db = res.locals.getDb();
+  const customer = db.customer.find(c => c.user_id === userId);
+
+  if (customer) {
+    res.locals.data = customer;
+  } else {
+    res.status(404).send({ error: "Customer not found" });
+  }
+  next();
+};
+
+
 module.exports = (mockServer) => {
   const { app, routes, data, getDb, getStore } = mockServer || {};
   const { config, db, injectors, middlewares, rewriters, store } = data || {};
@@ -91,5 +105,6 @@ module.exports = (mockServer) => {
     DataWrapper,
     CustomLog,
     GetStoreValue,
+    GetCustomerByUserId,
   };
 };
