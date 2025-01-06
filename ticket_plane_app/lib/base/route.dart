@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ticket_plane_app/screen/introduction/introduction_screen.dart';
 import 'package:ticket_plane_app/screen/login/login_screen.dart';
 import 'package:ticket_plane_app/screen/navigationbar/bottom_navigationbar_screen.dart';
+import 'package:ticket_plane_app/screen/profile/profile_screen.dart';
 import 'package:ticket_plane_app/screen/splash/splash_screen.dart';
 
 class AppRouter {
@@ -22,6 +23,10 @@ class AppRouter {
       GoRoute(
         path: '/nav',
         builder: (context, state) => BottomNavBar(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => ProfileScreen(),
       ),
     ],
   );
