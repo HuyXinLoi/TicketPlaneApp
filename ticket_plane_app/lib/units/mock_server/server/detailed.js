@@ -11,9 +11,9 @@ const app = mockServer.app;
 
 // Sets global injectors, middlewares, store and rewriters
 mockServer.setData({
-  injectors: config.injectors,
-  middlewares: config.middlewares,
-  store: config.store,
+    injectors: config.injectors,
+    middlewares: config.middlewares,
+    store: config.store,
 }); // pass mockServer instance to use it in middleware.js method
 
 // Make sure to use this at first, before all the resources
@@ -29,8 +29,8 @@ const isAuthorized = (_req) => true;
 
 // Custom Middleware
 app.use((req, res, next) => {
-  if (isAuthorized(req)) return next(); // continue to Mock Server router
-  res.sendStatus(401);
+    if (isAuthorized(req)) return next(); // continue to Mock Server router
+    res.sendStatus(401);
 });
 
 // Custom Routes
@@ -41,12 +41,12 @@ app.get("/echo", (req, res) => res.jsonp(req.query));
 const resources = mockServer.resources(config.db);
 
 resources
-  .create("/todos", (req, res, next) => {
-    next();
-  }) // /todos will be added to existing db
-  .send({ userId: 1, id: 1, title: "Marvel", completed: false })
-  .delay(1000) // in milliseconds
-  .done(); // make sure to call done method at last to complete the route configuration
+    .create("/todos", (req, res, next) => {
+        next();
+    }) // /todos will be added to existing db
+    .send({ userId: 1, id: 1, title: "Marvel", completed: false })
+    .delay(1000) // in milliseconds
+    .done(); // make sure to call done method at last to complete the route configuration
 
 app.use(resources.router);
 
