@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // if (savedUsername != null && savedPassword != null) {
     // Bạn có thể kiểm tra thêm với API nếu cần
     print('User is already logged in: \$savedUsername');
-    context.go('/home'); // Chuyển tới màn hình chính
+    context.go('/nav'); // Chuyển tới màn hình chính
     //}
   }
 
@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // await prefs.setString('password', password);
 
             print("Login successful: \${userData.toString()}");
-            context.go('/home');
+            context.go('/nav');
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -263,7 +263,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           icon: FontAwesomeIcons.google,
                           color: Colors.red,
                           onPressed: () {
-                            // TODO: Add Google login logic
+                            context.go('/loginfb');
                           },
                         ),
                         const SizedBox(width: 20),
@@ -271,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           icon: FontAwesomeIcons.facebookF,
                           color: Colors.blue,
                           onPressed: () {
-                            // TODO: Add Facebook login logic
+                            context.go('/logingg');
                           },
                         ),
                         const SizedBox(width: 20),

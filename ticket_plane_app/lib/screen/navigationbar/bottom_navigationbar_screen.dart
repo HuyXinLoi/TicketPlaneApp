@@ -14,9 +14,10 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   final appScreens = [
     HomeScreen(),
-    // const SearchScreen(),
-    // const TicketScreen(),
-    const Center(child: Text("Profile"))
+    //const SearchScreen(),
+    HomeScreen(),
+    const Center(child: Text("Tickets")),
+    //const ProfileScreen(),
   ];
 
   //change our index for BottomNavBar
