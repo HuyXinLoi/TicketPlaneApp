@@ -2,6 +2,26 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:go_router/go_router.dart';
+
+// ... (các import khác)
+
+// Màn hình Home (thay thế cho nội dung thực tế của bạn)
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Home Screen'),
+      ),
+      body: const Center(
+        child: Text('Welcome!'),
+      ),
+    );
+  }
+}
 
 String prettyPrint(Map json) {
   JsonEncoder encoder = const JsonEncoder.withIndent('  ');
@@ -39,6 +59,8 @@ class _FacebookAuthScreenState extends State<FacebookAuthScreen> {
       setState(() {
         _userData = userData;
       });
+      // Điều hướng đến HomeScreen nếu đã đăng nhập
+      _navigateToHomeScreen();
     }
   }
 
@@ -56,6 +78,9 @@ class _FacebookAuthScreenState extends State<FacebookAuthScreen> {
       _printCredentials();
       final userData = await FacebookAuth.instance.getUserData();
       _userData = userData;
+
+      // Điều hướng đến HomeScreen sau khi đăng nhập thành công
+      _navigateToHomeScreen();
     } else {
       print(result.status);
       print(result.message);
@@ -73,11 +98,23 @@ class _FacebookAuthScreenState extends State<FacebookAuthScreen> {
     setState(() {});
   }
 
+  // Hàm điều hướng đến HomeScreen
+  void _navigateToHomeScreen() {
+    context.go('/nav');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Facebook Auth Screen'),
+        // Nút trở về màn hình trước
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop(); // Trở về màn hình trước đó
+          },
+        ),
       ),
       body: _checking
           ? const Center(

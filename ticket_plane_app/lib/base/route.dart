@@ -5,6 +5,7 @@ import 'package:ticket_plane_app/screen/login/login_facebook.dart';
 import 'package:ticket_plane_app/screen/login/login_screen.dart';
 import 'package:ticket_plane_app/screen/navigationbar/bottom_navigationbar_screen.dart';
 import 'package:ticket_plane_app/screen/profile/profile_screen.dart';
+import 'package:ticket_plane_app/screen/sign_up/sign_up_screen.dart';
 import 'package:ticket_plane_app/screen/splash/splash_screen.dart';
 
 class AppRouter {
@@ -37,6 +38,10 @@ class AppRouter {
       GoRoute(
         path: '/profile',
         builder: (context, state) => ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/signup',
+        builder: (context, state) => SignUpScreen(),
       ),
     ],
   );

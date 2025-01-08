@@ -3,8 +3,28 @@ import 'dart:convert' show json;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+
+// ... other imports
+
+// Màn hình Home (thay thế cho nội dung thực tế của bạn)
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Home Screen'),
+      ),
+      body: const Center(
+        child: Text('Welcome!'),
+      ),
+    );
+  }
+}
 
 const List<String> scopes = <String>[
   'email',
@@ -45,6 +65,11 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
 
       if (isAuthorized) {
         unawaited(_handleGetContact(account!));
+      }
+
+      // Điều hướng đến HomeScreen nếu đã đăng nhập
+      if (account != null) {
+        _navigateToHomeScreen();
       }
     });
 
@@ -103,6 +128,8 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   Future<void> _handleSignIn() async {
     try {
       await _googleSignIn.signIn();
+      // Điều hướng đến HomeScreen sau khi đăng nhập thành công
+      _navigateToHomeScreen();
     } catch (error) {
       print(error);
     }
@@ -119,6 +146,11 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   }
 
   Future<void> _handleSignOut() => _googleSignIn.disconnect();
+
+  // Hàm điều hướng đến HomeScreen
+  void _navigateToHomeScreen() {
+    context.go('/nav');
+  }
 
   Widget _buildBody() {
     final GoogleSignInAccount? user = _currentUser;
@@ -172,8 +204,14 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Google Sign In Screen'),
-      ),
+          title: const Text('Google Sign In Screen'),
+          // Nút trở về màn hình trước
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.of(context).pop(); // Trở về màn hình trước đó
+            },
+          )),
       body: ConstrainedBox(
         constraints: const BoxConstraints.expand(),
         child: _buildBody(),
