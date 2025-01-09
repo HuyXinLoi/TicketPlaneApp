@@ -31,9 +31,8 @@ class _SplashScreenState extends State<SplashScreen> {
     final savedPassword = prefs.getString('password');
 
     if (savedUsername != null && savedPassword != null) {
-      // Bạn có thể kiểm tra thêm với API nếu cần
       print('User is already logged in: \$savedUsername');
-      context.go('/nav'); // Chuyển tới màn hình chính
+      context.go('/nav');
     }
   }
 
