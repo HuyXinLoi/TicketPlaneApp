@@ -1,11 +1,11 @@
-import 'dart:convert';
-import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ticket_plane_app/base/end_point.dart';
-import 'package:ticket_plane_app/screen/login/data/user.dart';
+import 'package:go_router/go_router.dart';
+import 'package:ticket_plane_app/screen/login/bloc/login_bloc.dart';
+import 'package:ticket_plane_app/screen/login/bloc/login_event.dart';
+import 'package:ticket_plane_app/screen/login/bloc/login_state.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,319 +15,315 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final _key = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
-  bool _hasPasswordText = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkLoginStatus();
-    passwordController.addListener(() {
-      setState(() {
-        _hasPasswordText = passwordController.text.isNotEmpty;
-      });
-    });
-  }
-
-  Future<void> _checkLoginStatus() async {
-    // final prefs = await SharedPreferences.getInstance();
-    // final savedUsername = prefs.getString('username');
-    // final savedPassword = prefs.getString('password');
-
-    // if (savedUsername != null && savedPassword != null) {
-    // // Bạn có thể kiểm tra thêm với API nếu cần
-    // print('User is already logged in: \$savedUsername');
-    // context.go('/home'); // Chuyển tới màn hình chính
-    //}
-  }
-
-  Future<void> _login() async {
-    if (_key.currentState!.validate()) {
-      final String username = emailController.text.trim();
-      final String password = passwordController.text.trim();
-
-      try {
-        final response = await http.get(
-          Uri.parse(EndPoint.user),
-        );
-
-        if (response.statusCode == 200) {
-          final List<dynamic> users = jsonDecode(response.body);
-          final user = users.firstWhere(
-            (u) => u['username'] == username,
-            orElse: () => null,
-          );
-
-          if (user != null && user['password'] == password) {
-            final userData = UserElement.fromJson(user);
-
-            // Lấy user_id từ API
-            final userId = user['user_id']; // Giả sử API trả về trường user_id
-            print("User ID: $userId");
-
-            // Lưu thông tin vào SharedPreferences
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('username', username);
-            await prefs.setString('password', password);
-            await prefs.setInt('user_id', userId); // Lưu user_id
-
-            print("Login successful: ${userData.toString()}");
-            context.go('/nav');
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Tên đăng nhập hoặc mật khẩu không chính xác.'),
-              ),
-            );
-          }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${response.reasonPhrase}')),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: $e')),
-        );
-        print("Error during login: $e");
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background gradient
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color.fromARGB(255, 46, 24, 240),
-                  Color.fromARGB(255, 61, 166, 252),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      body: BlocListener<LoginBloc, LoginState>(
+        listener: (context, state) {
+          if (state.status == LoginStates.success) {
+            context.go('/nav');
+          } else if (state.status == LoginStates.failure) {
+            Flushbar(
+              message: state.errorMessage ?? 'Login Failed',
+              margin: const EdgeInsets.all(8),
+              borderRadius: BorderRadius.circular(8),
+              backgroundColor: Colors.redAccent,
+              duration: const Duration(seconds: 3),
+              flushbarPosition: FlushbarPosition.TOP, // Hiển thị ở phía trên
+              icon: const Icon(
+                Icons.error,
+                size: 28,
+                color: Colors.white,
               ),
-            ),
-          ),
-          // Main content
-          Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Logo or Title
-                    const Text(
-                      'Welcome Back!',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Log in to continue',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70,
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-
-                    // Username field
-                    Form(
-                      key: _key,
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            controller: emailController,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              hintText: 'Username',
-                              prefixIcon:
-                                  const Icon(Icons.person, color: Colors.grey),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Password field with eye icon
-                          TextFormField(
-                            controller: passwordController,
-                            obscureText: _obscurePassword,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your password';
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              hintText: 'Password',
-                              prefixIcon:
-                                  const Icon(Icons.lock, color: Colors.grey),
-                              suffixIcon: _hasPasswordText
-                                  ? IconButton(
-                                      icon: Icon(
-                                        _obscurePassword
-                                            ? FontAwesomeIcons.eyeSlash
-                                            : FontAwesomeIcons.eye,
-                                        color: Colors.grey,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscurePassword = !_obscurePassword;
-                                        });
-                                      },
-                                    )
-                                  : null,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-
-                    // Login button
-                    ElevatedButton(
-                      onPressed: _login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.purple,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 100),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: const Text(
-                        'Log In',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Divider
-                    Row(
-                      children: const [
-                        Expanded(
-                          child: Divider(
-                            color: Colors.white54,
-                            thickness: 1,
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(
-                            'OR',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        ),
-                        Expanded(
-                          child: Divider(
-                            color: Colors.white54,
-                            thickness: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Social login buttons
-                    Row(
+            ).show(context);
+          }
+        },
+        child: Stack(
+          children: [
+            // Background gradient
+            _buildBackgroundGradient(),
+            // Main content
+            Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Form(
+                    key: _formKey,
+                    // Không cần autovalidate nữa
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        SocialIconButton(
-                          icon: FontAwesomeIcons.google,
-                          color: Colors.red,
-                          onPressed: () {
-                            // TODO: Add Google login logic
-                          },
-                        ),
-                        const SizedBox(width: 20),
-                        SocialIconButton(
-                          icon: FontAwesomeIcons.facebookF,
-                          color: Colors.blue,
-                          onPressed: () {
-                            // TODO: Add Facebook login logic
-                          },
-                        ),
-                        const SizedBox(width: 20),
-                        SocialIconButton(
-                          icon: FontAwesomeIcons.apple,
-                          color: Colors.black,
-                          onPressed: () {
-                            // TODO: Add Apple login logic
-                          },
-                        ),
+                        // Logo or Title
+                        _buildTitle(),
+                        const SizedBox(height: 40),
+                        // Email and password fields
+                        _buildEmailField(),
+                        const SizedBox(height: 20),
+                        _buildPasswordField(),
+                        const SizedBox(height: 30),
+                        // Login button
+                        _buildLoginButton(),
+                        const SizedBox(height: 20),
+                        // Divider
+                        _buildDivider(),
+                        const SizedBox(height: 20),
+                        // Social login buttons
+                        _buildSocialLoginButtons(context),
+                        const SizedBox(height: 30),
+                        // Sign up link
+                        _buildSignUpLink(),
                       ],
                     ),
-                    const SizedBox(height: 30),
-
-                    // Sign up link
-                    TextButton(
-                      onPressed: () {
-                        // TODO: Navigate to sign-up screen
-                      },
-                      child: RichText(
-                        text: TextSpan(
-                          text: 'Don’t have an account? ',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 16,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: 'Sign Up',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackgroundGradient() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color.fromARGB(255, 46, 24, 240),
+            Color.fromARGB(255, 61, 166, 252),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTitle() {
+    return Column(
+      children: [
+        const Text(
+          'Welcome Back!',
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-        ],
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          'Log in to continue',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.white70,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmailField() {
+    return BlocBuilder<LoginBloc, LoginState>(
+      builder: (context, state) {
+        return TextFormField(
+          initialValue: state.email,
+          onChanged: (value) {
+            context.read<LoginBloc>().add(LoginEmailChanged(email: value));
+            // Gửi event validate khi giá trị thay đổi
+            context
+                .read<LoginBloc>()
+                .add(LoginEmailValidationChanged(email: value));
+          },
+          // Không cần validator ở đây nữa
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            hintText: 'Username',
+            prefixIcon: const Icon(Icons.person, color: Colors.grey),
+            // Hiển thị lỗi nếu không hợp lệ
+            //errorText: state.isEmailValid ? null : 'Invalid email',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return BlocBuilder<LoginBloc, LoginState>(
+      builder: (context, state) {
+        return TextFormField(
+          initialValue: state.password,
+          obscureText: _obscurePassword,
+          onChanged: (value) {
+            context
+                .read<LoginBloc>()
+                .add(LoginPasswordChanged(password: value));
+            // Gửi event validate khi giá trị thay đổi
+            context
+                .read<LoginBloc>()
+                .add(LoginPasswordValidationChanged(password: value));
+          },
+          // Không cần validator ở đây nữa
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            hintText: 'Password',
+            prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword
+                    ? FontAwesomeIcons.eyeSlash
+                    : FontAwesomeIcons.eye,
+                color: Colors.grey,
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
+            ),
+            // Hiển thị lỗi nếu không hợp lệ
+            //errorText: state.isPasswordValid ? null : 'Invalid password',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return BlocBuilder<LoginBloc, LoginState>(
+      builder: (context, state) {
+        return state.status == LoginStates.loading
+            ? const CircularProgressIndicator()
+            : ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    context.read<LoginBloc>().add(LoginSubmitted());
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.purple,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 100),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text(
+                  'Log In',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              );
+      },
+    );
+  }
+
+  Widget _buildDivider() {
+    return Row(
+      children: const [
+        Expanded(
+          child: Divider(
+            color: Colors.white54,
+            thickness: 1,
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.0),
+          child: Text(
+            'OR',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
+        Expanded(
+          child: Divider(
+            color: Colors.white54,
+            thickness: 1,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialLoginButtons(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SocialIconButton(
+          icon: FontAwesomeIcons.google,
+          color: Colors.red,
+          onPressed: () {
+            context
+                .read<LoginBloc>()
+                .add(LoginWithGooglePressed(context: context));
+          },
+        ),
+        const SizedBox(width: 20),
+        SocialIconButton(
+          icon: FontAwesomeIcons.facebookF,
+          color: Colors.blue,
+          onPressed: () {
+            context
+                .read<LoginBloc>()
+                .add(LoginWithFacebookPressed(context: context));
+          },
+        ),
+        const SizedBox(width: 20),
+        SocialIconButton(
+          icon: FontAwesomeIcons.apple,
+          color: Colors.black,
+          onPressed: () {
+            context.read<LoginBloc>().add(LoginWithApplePressed());
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSignUpLink() {
+    return TextButton(
+      onPressed: () {
+        context.go('/signup');
+      },
+      child: RichText(
+        text: const TextSpan(
+          text: 'Don’t have an account? ',
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 16,
+          ),
+          children: [
+            TextSpan(
+              text: 'Sign Up',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-// Widget for social icon buttons
+// Widget for social icon buttons (No changes needed here)
 class SocialIconButton extends StatelessWidget {
   final IconData icon;
   final Color color;
