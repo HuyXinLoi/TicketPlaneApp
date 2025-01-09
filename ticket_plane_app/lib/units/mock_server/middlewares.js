@@ -77,6 +77,19 @@ const GetStoreValue = (req, res, next) => {
     next();
 };
 
+const filterById = (req, res, next) => {
+    const id = req.params.id;
+    if (id) {
+        const customer = res.locals.getDb().customers.find((c) => c.customer_id.toString() === id);
+        if (customer) {
+            res.locals.data = customer;
+        } else {
+            res.locals.data = {}; // Hoặc trả về lỗi 404
+        }
+    }
+    next();
+};
+
 module.exports = (mockServer) => {
     const { app, routes, data, getDb, getStore } = mockServer || {};
     const { config, db, injectors, middlewares, rewriters, store } = data || {};
@@ -90,5 +103,6 @@ module.exports = (mockServer) => {
         DataWrapper,
         CustomLog,
         GetStoreValue,
+        filterById,
     };
 };

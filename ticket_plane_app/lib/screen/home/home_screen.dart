@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/units/api_service.dart';
 import '../search/search_screen.dart';
 
@@ -29,6 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadData() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.getString('user_id');
       // Lấy danh sách discounts
       final discountsList = (await apiService.getDiscounts())
           .map((item) => Discount.fromJson(item))
@@ -207,8 +210,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemBuilder: (context, index) {
                                 return _buildDestinationBanner(
                                   discounts[index].description,
-                                  'https://via.placeholder.com/250x150?text=Promo+${index + 1}', // Thay bằng ảnh thực tế
-                                  '${discounts[index].discountPercentage}% OFF',
+                                  'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1287&q=80', // Thay bằng ảnh thực tế
+                                  'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1287&q=80',
                                 );
                               },
                             ),
@@ -232,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemBuilder: (context, index) {
                                 return _buildDestinationCard(
                                   arrivalCities[index],
-                                  'https://via.placeholder.com/80x60?text=${arrivalCities[index].substring(0, 3).toUpperCase()}', // Placeholder image
+                                  'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1287&q=80', // Placeholder image
                                 );
                               },
                             ),

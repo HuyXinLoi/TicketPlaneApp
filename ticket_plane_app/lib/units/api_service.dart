@@ -6,6 +6,15 @@ class ApiService {
 
   ApiService(this.baseUrl);
 
+  Future<Map<String, dynamic>> getCustomerById(String userId) async {
+    final response = await http.get(Uri.parse('$baseUrl/customers/$userId'));
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load customer');
+    }
+  }
+
   Future<List<dynamic>> getDiscounts() async {
     final response = await http.get(Uri.parse('$baseUrl/discounts'));
     if (response.statusCode == 200) {

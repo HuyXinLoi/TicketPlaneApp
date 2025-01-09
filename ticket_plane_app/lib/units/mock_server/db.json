@@ -234,14 +234,13 @@
       "email": "hoang.mai@example.com"
     }
   ],
-  "/customers": [
+  "/customers":  [
     {
       "customer_id": 1,
       "user_id": 1,
       "first_name": "Nguyen",
       "last_name": "An",
       "image": "https://randomuser.me/api/portraits",
-      "email": "nguyen.an@example.com",
       "phone": "+84123456789",
       "passport_number": "A12345678",
       "address": "123 Pham Hung, Hanoi"
@@ -252,7 +251,6 @@
       "first_name": "Le",
       "last_name": "Trang",
       "image": "https://randomuser.me/api/portraits",
-      "email": "le.trang@example.com",
       "phone": "+84987654321",
       "passport_number": "B98765432",
       "address": "456 Le Duan, Ho Chi Minh City"
@@ -263,7 +261,6 @@
       "first_name": "Tran",
       "last_name": "Bich",
       "image": "https://randomuser.me/api/portraits",
-      "email": "tran.bich@example.com",
       "phone": "+84111223344",
       "passport_number": "C11223344",
       "address": "789 Xuan Thuy, Hanoi"
@@ -274,7 +271,6 @@
       "first_name": "Pham",
       "last_name": "Minh",
       "image": "https://randomuser.me/api/portraits",
-      "email": "pham.minh@example.com",
       "phone": "+84998765432",
       "passport_number": "D22334455",
       "address": "123 Ba Trieu, Hanoi"
@@ -285,12 +281,15 @@
       "first_name": "Hoang",
       "last_name": "Mai",
       "image": "https://randomuser.me/api/portraits",
-      "email": "hoang.mai@example.com",
       "phone": "+84887766554",
       "passport_number": "E55667788",
       "address": "101 Nguyen Thi Minh Khai, Ho Chi Minh City"
     }
-  ]
-  
+  ],
+    "/customers/:id": {
+    "_config": true,
+    "middlewares": ["filterById"]
+  }
 
+  
 }

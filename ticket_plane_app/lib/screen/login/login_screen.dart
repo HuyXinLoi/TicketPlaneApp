@@ -64,30 +64,35 @@ class _LoginScreenState extends State<LoginScreen> {
           if (user != null && user['password'] == password) {
             final userData = UserElement.fromJson(user);
 
+            // Lấy user_id từ API
+            final userId = user['user_id']; // Giả sử API trả về trường user_id
+            print("User ID: $userId");
+
             // Lưu thông tin vào SharedPreferences
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('username', username);
             await prefs.setString('password', password);
+            await prefs.setInt('user_id', userId); // Lưu user_id
 
-            print("Login successful: \${userData.toString()}");
+            print("Login successful: ${userData.toString()}");
             context.go('/nav');
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                  content:
-                      Text('Tên đăng nhập hoặc mật khẩu không chính xác.')),
+                content: Text('Tên đăng nhập hoặc mật khẩu không chính xác.'),
+              ),
             );
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: \${response.reasonPhrase}')),
+            SnackBar(content: Text('Error: ${response.reasonPhrase}')),
           );
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An error occurred: $e')),
         );
-        print("Error during login: " + e.toString());
+        print("Error during login: $e");
       }
     }
   }
