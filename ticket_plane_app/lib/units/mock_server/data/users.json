@@ -1,32 +1,42 @@
 [
   {
-    "id": 1,
-    "name": "Leanne Graham",
-    "username": "Bret",
-    "email": "Sincere@april.biz"
+    "user_id": 1,
+    "username": "nguyen.an",
+    "password": "1",
+    "email": "nguyen.an@example.com",
+    "role": "customer",
+    "is_active": true
   },
   {
-    "id": 2,
-    "name": "Ervin Howell",
-    "username": "Antonette",
-    "email": "Shanna@melissa.tv"
+    "user_id": 2,
+    "username": "le.trang",
+    "password": "hashed_password_2",
+    "email": "le.trang@example.com",
+    "role": "customer",
+    "is_active": true
   },
   {
-    "id": 3,
-    "name": "Clementine Bauch",
-    "username": "Samantha",
-    "email": "Nathan@yesenia.net"
+    "user_id": 3,
+    "username": "admin01",
+    "password": "hashed_password_3",
+    "email": "admin01@example.com",
+    "role": "admin",
+    "is_active": true
   },
   {
-    "id": 4,
-    "name": "Patricia Lebsack",
-    "username": "Karianne",
-    "email": "Julianne.OConner@kory.org"
+    "user_id": 4,
+    "username": "pham.minh",
+    "password": "hashed_password_4",
+    "email": "pham.minh@example.com",
+    "role": "customer",
+    "is_active": false
   },
   {
-    "id": 5,
-    "name": "Chelsey Dietrich",
-    "username": "Kamren",
-    "email": "Lucio_Hettinger@annie.ca"
+    "user_id": 5,
+    "username": "hoang.mai",
+    "password": "hashed_password_5",
+    "email": "hoang.mai@example.com",
+    "role": "customer",
+    "is_active": true
   }
 ]

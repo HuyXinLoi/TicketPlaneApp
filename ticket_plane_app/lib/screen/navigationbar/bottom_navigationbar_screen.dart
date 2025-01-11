@@ -18,6 +18,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     //const SearchScreen(),
     HomeScreen(),
     const Center(child: Text("Tickets")),
+    //const ProfileScreen(),
     const ProfileScreen(),
   ];
 
