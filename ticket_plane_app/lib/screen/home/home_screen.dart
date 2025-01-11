@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ticket_plane_app/units/api_service.dart';
 import '../search/search_screen.dart';
 
 // Import các class từ thư mục data
@@ -18,36 +17,9 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Discount> discounts = [];
   List<Flight> flights = [];
   List<String> arrivalCities = [];
-
-  // Khởi tạo ApiService
-  final apiService = ApiService("http://10.0.2.2:3000");
   @override
   void initState() {
     super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    try {
-      // Lấy danh sách discounts
-      final discountsList = (await apiService.getDiscounts())
-          .map((item) => Discount.fromJson(item))
-          .toList();
-
-      // Lấy danh sách flights
-      final flightsList = (await apiService.getFlights())
-          .map((item) => Flight.fromJson(item))
-          .toList();
-      arrivalCities =
-          flightsList.map((flight) => flight.arrivalCity).toSet().toList();
-      // Cập nhật state
-      setState(() {
-        discounts = discountsList;
-        flights = flightsList.sublist(0, 3);
-      });
-    } catch (e) {
-      print('Error loading data: $e');
-    }
   }
 
   @override
