@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_bloc.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_event.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_state.dart';
@@ -26,9 +27,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
         listener: (context, state) {
           if (state.status == SignupStatus.success) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Signup Successful')),
+              SnackBar(
+                content: const Text('Đăng ký thành công'),
+                duration: const Duration(seconds: 3),
+              ),
             );
-            context.go('/login');
+            if (state.userId != null) {
+              context.go('/user-info/${state.userId}',
+                  extra: 'Đăng ký thành công');
+            }
           } else if (state.status == SignupStatus.failure) {
             Flushbar(
               message: state.errorMessage ?? 'Login Failed',
@@ -147,7 +154,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             fillColor: Colors.white,
             hintText: 'Email',
             prefixIcon: const Icon(Icons.email, color: Colors.grey),
-            //errorText: state.isEmailValid ? null : 'Invalid email',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
@@ -190,9 +196,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 });
               },
             ),
-            //errorText: state.isPasswordValid
-            //   ? null
-            //    : 'Password must be at least 6 characters',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
@@ -235,8 +238,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 });
               },
             ),
-            // errorText:
-            //   state.isConfirmPasswordValid ? null : 'Passwords do not match',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
@@ -339,7 +340,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget _buildSignInLink() {
     return TextButton(
       onPressed: () {
-        context.go('/login'); // Quay lại màn hình đăng nhập
+        context.go('/login');
       },
       child: RichText(
         text: const TextSpan(
@@ -364,7 +365,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 }
 
-// Widget for social icon buttons (No changes needed here)
 class SocialIconButton extends StatelessWidget {
   final IconData icon;
   final Color color;
