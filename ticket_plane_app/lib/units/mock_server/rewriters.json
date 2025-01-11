@@ -1,5 +1,0 @@
-{
-  "/api/*": "/$1",
-  "/posts/:id/comments": "/comments?postId=:id",
-  "/customers?customer_id=:id": "/customers/:id"
-}
