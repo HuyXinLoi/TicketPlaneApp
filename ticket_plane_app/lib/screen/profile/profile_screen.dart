@@ -1,153 +1,170 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ticket_plane_app/screen/home/bloc/bloc_bloc.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Xóa tất cả dữ liệu lưu trữ
-    context.go('/login'); // Điều hướng về màn hình đăng nhập
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF0D47A1),
-              Color(0xFF1976D2),
-            ],
+    return BlocListener<ProfileBloc, ProfileState>(
+      listener: (context, state) {
+        if (state is ProfileLoggedOut) {
+          if (mounted) {
+            context.go('/login');
+          }
+        }
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF0D47A1),
+                Color(0xFF1976D2),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const SizedBox(width: 48), // Giữ khoảng cách cố định
-                    const Text(
-                      'Profile',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+          child: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(width: 48), // Giữ khoảng cách cố định
+                      const Text(
+                        'Profile',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.logout, color: Colors.white),
-                      onPressed: _logout,
-                      tooltip: 'Đăng xuất',
-                    ),
-                  ],
-                ),
-              ),
-
-              // Profile Picture and Name
-              Center(
-                child: Column(
-                  children: [
-                    const CircleAvatar(
-                      radius: 60,
-                      backgroundImage: NetworkImage(
-                          'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1287&q=80'),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Nguyễn Văn A', // Hiển thị tên cố định
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Body Content
-              Expanded(
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 20),
-
-                          // Personal Information
-                          const Text(
-                            'Thông tin cá nhân',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          _buildInfoItem(
-                              Icons.email, 'Email', 'nguyenvana@example.com'),
-                          _buildInfoItem(Icons.phone, 'Số điện thoại',
-                              '+84123456789'),
-                          _buildInfoItem(Icons.location_on, 'Địa chỉ',
-                              '123 Đường ABC, Quận XYZ, Thành phố HCM'),
-                          _buildInfoItem(Icons.card_membership, 'Passport',
-                              'A1234567'),
-                          _buildInfoItem(Icons.cake, 'Ngày sinh', '01/01/1990'),
-
-                          const SizedBox(height: 30),
-
-                          // Logout Button
-                          Center(
-                            child: ElevatedButton(
-                              onPressed: _logout,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 15, horizontal: 100),
-                                backgroundColor: Colors.redAccent,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                              ),
-                              child: const Text(
-                                'Đăng xuất',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                      BlocBuilder<ProfileBloc, ProfileState>(
+                        builder: (context, state) {
+                          return IconButton(
+                            icon: const Icon(Icons.logout, color: Colors.white),
+                            onPressed: () {
+                              context.read<ProfileBloc>().add(LogoutButtonPressed());
+                                  if(state is ProfileLoggedOut){
+                                      
+                                }
+                            },
+                                
+                                
+                            tooltip: 'Đăng xuất',
+                          );
+                        },
+                      )
+                    ],
                   ),
                 ),
-              ),
-            ],
+
+                // Profile Picture and Name
+                Center(
+                  child: Column(
+                    children: [
+                      const CircleAvatar(
+                        radius: 60,
+                        backgroundImage: NetworkImage(
+                            'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1287&q=80'),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Nguyễn Văn A', // Hiển thị tên cố định
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Body Content
+                Expanded(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 20),
+
+                            // Personal Information
+                            const Text(
+                              'Thông tin cá nhân',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _buildInfoItem(
+                                Icons.email, 'Email', 'nguyenvana@example.com'),
+                            _buildInfoItem(Icons.phone, 'Số điện thoại',
+                                '+84123456789'),
+                            _buildInfoItem(Icons.location_on, 'Địa chỉ',
+                                '123 Đường ABC, Quận XYZ, Thành phố HCM'),
+                            _buildInfoItem(Icons.card_membership, 'Passport',
+                                'A1234567'),
+                            _buildInfoItem(Icons.cake, 'Ngày sinh', '01/01/1990'),
+
+                            const SizedBox(height: 30),
+
+                            // Logout Button
+                            Center(
+                              child: ElevatedButton(
+                                onPressed: () =>
+                                    context.read<ProfileBloc>().add(LogoutButtonPressed()),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 15, horizontal: 100),
+                                  backgroundColor: Colors.redAccent,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Đăng xuất',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
