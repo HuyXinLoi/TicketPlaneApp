@@ -26,6 +26,7 @@ dependencies:
   equatable: ^2.0.7
   flutter_bloc: ^8.1.6
   another_flushbar: ^1.12.30
+  intl: ^0.20.1
 
 dev_dependencies:
   flutter_test:

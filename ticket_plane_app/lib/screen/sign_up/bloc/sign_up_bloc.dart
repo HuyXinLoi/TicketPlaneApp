@@ -1,11 +1,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_event.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_state.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignupBloc extends Bloc<SignupEvent, SignupState> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   SignupBloc() : super(SignupState()) {
     on<SignupEmailChanged>(_onEmailChanged);
@@ -83,7 +86,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
       emit(state.copyWith(
         isEmailValid: false,
         status: SignupStatus.failure,
-        errorMessage: 'Vui lòng nhập mật khẩu trùng nhau giùm tớ :))!',
+        errorMessage: 'Vui lòng nhập mật khẩu trùng nhau giùm :))!',
       ));
       return;
     }
@@ -91,9 +94,19 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     if (isEmailValid && isPasswordValid && isComfirmPasswordValid) {
       emit(state.copyWith(status: SignupStatus.loading));
       try {
-        await _auth.createUserWithEmailAndPassword(
-            email: state.email, password: state.password);
-        emit(state.copyWith(status: SignupStatus.success));
+        UserCredential userCredential =
+            await _auth.createUserWithEmailAndPassword(
+                email: state.email, password: state.password);
+        await _firestore.collection('users').doc(userCredential.user!.uid).set({
+          'email': state.email,
+          'password': state.password,
+          'userId': userCredential.user!.uid,
+        });
+        final prefs = await SharedPreferences.getInstance();
+        final userId = prefs.setString('userId', userCredential.user!.uid);
+
+        emit(state.copyWith(
+            status: SignupStatus.success, userId: userCredential.user!.uid));
       } on FirebaseAuthException catch (e) {
         emit(state.copyWith(
             status: SignupStatus.failure,

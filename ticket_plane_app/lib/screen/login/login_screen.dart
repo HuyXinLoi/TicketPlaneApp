@@ -32,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
               borderRadius: BorderRadius.circular(8),
               backgroundColor: Colors.redAccent,
               duration: const Duration(seconds: 3),
-              flushbarPosition: FlushbarPosition.TOP, // Hiển thị ở phía trên
+              flushbarPosition: FlushbarPosition.TOP,
               icon: const Icon(
                 Icons.error,
                 size: 28,
@@ -43,16 +43,13 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         child: Stack(
           children: [
-            // Background gradient
             _buildBackgroundGradient(),
-            // Main content
             Center(
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Form(
                     key: _formKey,
-                    // Không cần autovalidate nữa
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -133,19 +130,15 @@ class _LoginScreenState extends State<LoginScreen> {
           initialValue: state.email,
           onChanged: (value) {
             context.read<LoginBloc>().add(LoginEmailChanged(email: value));
-            // Gửi event validate khi giá trị thay đổi
             context
                 .read<LoginBloc>()
                 .add(LoginEmailValidationChanged(email: value));
           },
-          // Không cần validator ở đây nữa
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
             hintText: 'Username',
             prefixIcon: const Icon(Icons.person, color: Colors.grey),
-            // Hiển thị lỗi nếu không hợp lệ
-            //errorText: state.isEmailValid ? null : 'Invalid email',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
@@ -166,12 +159,10 @@ class _LoginScreenState extends State<LoginScreen> {
             context
                 .read<LoginBloc>()
                 .add(LoginPasswordChanged(password: value));
-            // Gửi event validate khi giá trị thay đổi
             context
                 .read<LoginBloc>()
                 .add(LoginPasswordValidationChanged(password: value));
           },
-          // Không cần validator ở đây nữa
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
@@ -190,8 +181,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 });
               },
             ),
-            // Hiển thị lỗi nếu không hợp lệ
-            //errorText: state.isPasswordValid ? null : 'Invalid password',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
@@ -323,7 +312,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// Widget for social icon buttons (No changes needed here)
 class SocialIconButton extends StatelessWidget {
   final IconData icon;
   final Color color;
