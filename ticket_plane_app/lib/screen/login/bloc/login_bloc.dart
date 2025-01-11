@@ -63,13 +63,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     // Sau khi kiểm tra hợp lệ, gọi Firebase
     emit(state.copyWith(status: LoginStates.loading));
     try {
-      await _auth.signInWithEmailAndPassword(
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: state.email,
         password: state.password,
       );
+      // Lưu userId vào SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      final savedUsername = prefs.setString('username', state.email);
-      final savedPassword = prefs.setString('password', state.password);
+      await prefs.setString('userId', userCredential.user!.uid);
       emit(state.copyWith(status: LoginStates.success));
     } on FirebaseAuthException catch (e) {
       String errorMessage =
