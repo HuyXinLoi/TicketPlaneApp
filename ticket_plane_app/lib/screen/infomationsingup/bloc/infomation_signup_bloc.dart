@@ -59,16 +59,17 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString('userId');
+      final email = prefs.getString('email');
       final userInfo = UserInfo(
-        name: state.name,
-        phoneNumber: state.phoneNumber,
-        address: state.address,
-        gender: state.gender,
-        passport: state.passport,
-        dateOfBirth: state.dateOfBirth,
-        urlImage: '',
-        userId: userId!,
-      );
+          name: state.name,
+          phoneNumber: state.phoneNumber,
+          address: state.address,
+          gender: state.gender,
+          passport: state.passport,
+          dateOfBirth: state.dateOfBirth,
+          urlImage: '',
+          userId: userId!,
+          email: email);
       await _userInfoRepository.saveUserInfo(userInfo, userId);
       emit(state.copyWith(status: UserInfoStatus.success));
     } catch (e) {

@@ -9,17 +9,18 @@ class UserInfo {
   final DateTime dateOfBirth;
   final String? urlImage;
   final String userId;
+  final String? email;
 
-  UserInfo({
-    required this.name,
-    required this.phoneNumber,
-    required this.address,
-    required this.gender,
-    required this.passport,
-    required this.dateOfBirth,
-    required this.urlImage,
-    required this.userId,
-  });
+  UserInfo(
+      {required this.name,
+      required this.phoneNumber,
+      required this.address,
+      required this.gender,
+      required this.passport,
+      required this.dateOfBirth,
+      required this.urlImage,
+      required this.userId,
+      required this.email});
 
   Map<String, dynamic> toMap() {
     return {
@@ -30,7 +31,8 @@ class UserInfo {
       'passport': passport,
       'dateOfBirth': Timestamp.fromDate(dateOfBirth),
       'urlImage': urlImage,
-      'userId': userId
+      'userId': userId,
+      'email': email
     };
   }
 
@@ -43,6 +45,7 @@ class UserInfo {
         passport: map['passport'] ?? '',
         dateOfBirth: (map['dateOfBirth'] as Timestamp).toDate(),
         urlImage: map['urlImage'] ?? '',
-        userId: map['userId'] ?? '');
+        userId: map['userId'] ?? '',
+        email: map['email'] ?? '');
   }
 }
