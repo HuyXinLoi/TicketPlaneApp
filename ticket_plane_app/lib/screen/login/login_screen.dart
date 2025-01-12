@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/screen/login/bloc/login_bloc.dart';
 import 'package:ticket_plane_app/screen/login/bloc/login_event.dart';
 import 'package:ticket_plane_app/screen/login/bloc/login_state.dart';
+import 'package:local_auth/local_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +19,72 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
+  final String _isBiometricsEnabledKey = 'isBiometricsEnabled';
+  final String _usernameKey = 'username';
+  bool _isBiometricsEnabled = false;
+  String _username = '';
+  final LocalAuthentication auth = LocalAuthentication();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isBiometricsEnabled = prefs.getBool(_isBiometricsEnabledKey) ?? false;
+      _username = prefs.getString(_usernameKey) ?? '';
+    });
+  }
+
+  Future<void> _authenticateWithBiometrics() async {
+    bool authenticated = false;
+    try {
+      authenticated = await auth.authenticate(
+        localizedReason: 'Quét Vân Tay Để Đăng Nhập',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: true,
+        ),
+      );
+    } catch (e) {
+      print(e);
+      Flushbar(
+        message: "Vân Tay Cùi Bắp",
+        margin: const EdgeInsets.all(8),
+        borderRadius: BorderRadius.circular(8),
+        backgroundColor: Colors.redAccent,
+        duration: const Duration(seconds: 3),
+        flushbarPosition: FlushbarPosition.TOP,
+        icon: const Icon(
+          Icons.error,
+          size: 28,
+          color: Colors.white,
+        ),
+      ).show(context);
+      return;
+    }
+
+    if (authenticated) {
+      context.go('/nav');
+    } else {
+      Flushbar(
+        message: "Đăng Nhập Thất Bại",
+        margin: const EdgeInsets.all(8),
+        borderRadius: BorderRadius.circular(8),
+        backgroundColor: Colors.redAccent,
+        duration: const Duration(seconds: 3),
+        flushbarPosition: FlushbarPosition.TOP,
+        icon: const Icon(
+          Icons.error,
+          size: 28,
+          color: Colors.white,
+        ),
+      ).show(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
             context.go('/nav');
           } else if (state.status == LoginStates.failure) {
             Flushbar(
-              message: state.errorMessage ?? 'Login Failed',
+              message: state.errorMessage ?? 'Đăng Nhập Thất Bại',
               margin: const EdgeInsets.all(8),
               borderRadius: BorderRadius.circular(8),
               backgroundColor: Colors.redAccent,
@@ -54,24 +122,29 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Logo or Title
                         _buildTitle(),
                         const SizedBox(height: 40),
-                        // Email and password fields
                         _buildEmailField(),
                         const SizedBox(height: 20),
                         _buildPasswordField(),
-                        const SizedBox(height: 30),
-                        // Login button
-                        _buildLoginButton(),
+                        const SizedBox(height: 10),
+                        _buildForgotPasswordLink(),
                         const SizedBox(height: 20),
-                        // Divider
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildLoginButton(),
+                            if (_isBiometricsEnabled) ...[
+                              const SizedBox(width: 20),
+                              _buildBiometricsButton(),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 20),
                         _buildDivider(),
                         const SizedBox(height: 20),
-                        // Social login buttons
                         _buildSocialLoginButtons(context),
                         const SizedBox(height: 30),
-                        // Sign up link
                         _buildSignUpLink(),
                       ],
                     ),
@@ -103,9 +176,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildTitle() {
     return Column(
       children: [
-        const Text(
-          'Welcome Back!',
-          style: TextStyle(
+        Text(
+          _username.isNotEmpty ? 'Chào Mừng, $_username!' : 'Xin Chào!',
+          style: const TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -113,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 10),
         const Text(
-          'Log in to continue',
+          'Đăng Nhập Để Bắt Đầu',
           style: TextStyle(
             fontSize: 16,
             color: Colors.white70,
@@ -137,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            hintText: 'Username',
+            hintText: 'Email',
             prefixIcon: const Icon(Icons.person, color: Colors.grey),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
@@ -166,7 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            hintText: 'Password',
+            hintText: 'Mật Khẩu',
             prefixIcon: const Icon(Icons.lock, color: Colors.grey),
             suffixIcon: IconButton(
               icon: Icon(
@@ -206,13 +279,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.purple,
                   padding:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 100),
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
                 child: const Text(
-                  'Log In',
+                  'Đăng Nhập',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -220,6 +293,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               );
       },
+    );
+  }
+
+  Widget _buildBiometricsButton() {
+    return IconButton(
+      onPressed: _authenticateWithBiometrics,
+      icon: const Icon(Icons.fingerprint),
+      iconSize: 40,
+      color: Colors.purple,
     );
   }
 
@@ -235,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.0),
           child: Text(
-            'OR',
+            'Hoặc',
             style: TextStyle(color: Colors.white70),
           ),
         ),
@@ -291,14 +373,14 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: RichText(
         text: const TextSpan(
-          text: 'Don’t have an account? ',
+          text: 'Bạn Chưa Có Tài Khoản? ',
           style: TextStyle(
             color: Colors.white70,
             fontSize: 16,
           ),
           children: [
             TextSpan(
-              text: 'Sign Up',
+              text: 'Đăng Ký Ngay',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -306,6 +388,21 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForgotPasswordLink() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: () {
+          context.go('/forgot-password');
+        },
+        child: const Text(
+          'Quên Mật Khẩu',
+          style: TextStyle(color: Colors.white70),
         ),
       ),
     );

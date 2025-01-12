@@ -44,7 +44,6 @@ class LoginWithFacebookPressed extends LoginEvent {
 
 class LoginWithApplePressed extends LoginEvent {}
 
-// Thêm các event cho việc validate
 class LoginEmailValidationChanged extends LoginEvent {
   final String email;
 

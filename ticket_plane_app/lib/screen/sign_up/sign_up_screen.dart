@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ticket_plane_app/screen/infomationsingup/bloc/infomation_signup_bloc.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_bloc.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_event.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_state.dart';
@@ -38,7 +39,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             }
           } else if (state.status == SignupStatus.failure) {
             Flushbar(
-              message: state.errorMessage ?? 'Login Failed',
+              message: state.errorMessage ?? 'Đăng Nhập Thất Bại',
               margin: const EdgeInsets.all(8),
               borderRadius: BorderRadius.circular(8),
               backgroundColor: Colors.redAccent,
@@ -54,9 +55,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         },
         child: Stack(
           children: [
-            // Background gradient
             _buildBackgroundGradient(),
-            // Main content
             Center(
               child: SingleChildScrollView(
                 child: Padding(
@@ -67,26 +66,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Logo or Title
                         _buildTitle(),
                         const SizedBox(height: 40),
-                        // Email, password, and confirm password fields
                         _buildEmailField(),
                         const SizedBox(height: 20),
                         _buildPasswordField(),
                         const SizedBox(height: 20),
                         _buildConfirmPasswordField(),
                         const SizedBox(height: 30),
-                        // Sign up button
                         _buildSignUpButton(),
                         const SizedBox(height: 20),
-                        // Divider
                         _buildDivider(),
                         const SizedBox(height: 20),
-                        // Social login buttons
                         _buildSocialLoginButtons(context),
                         const SizedBox(height: 30),
-                        // Sign in link
                         _buildSignInLink(),
                       ],
                     ),
@@ -119,7 +112,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Column(
       children: [
         const Text(
-          'Create Account',
+          'Tạo Tài Khoản',
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
@@ -128,7 +121,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
         const SizedBox(height: 10),
         const Text(
-          'Sign up to get started',
+          'Đăng Nhập Để Bắt Đầu',
           style: TextStyle(
             fontSize: 16,
             color: Colors.white70,
@@ -181,7 +174,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            hintText: 'Password',
+            hintText: 'Mật Khẩu',
             prefixIcon: const Icon(Icons.lock, color: Colors.grey),
             suffixIcon: IconButton(
               icon: Icon(
@@ -223,7 +216,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            hintText: 'Confirm Password',
+            hintText: 'Xác Nhận Mật Khẩu',
             prefixIcon: const Icon(Icons.lock, color: Colors.grey),
             suffixIcon: IconButton(
               icon: Icon(
@@ -269,7 +262,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Sign Up',
+                  'Đăng Ký',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -292,7 +285,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.0),
           child: Text(
-            'OR',
+            'Hoặc',
             style: TextStyle(color: Colors.white70),
           ),
         ),
@@ -344,14 +337,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
       },
       child: RichText(
         text: const TextSpan(
-          text: 'Already have an account? ',
+          text: 'Bạn Đã Có Tài Khoản? ',
           style: TextStyle(
             color: Colors.white70,
             fontSize: 16,
           ),
           children: [
             TextSpan(
-              text: 'Sign In',
+              text: 'Đăng Nhập Ngay',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,

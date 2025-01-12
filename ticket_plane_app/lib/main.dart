@@ -3,6 +3,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ticket_plane_app/base/route.dart';
+import 'package:ticket_plane_app/screen/forgotpassword/bloc/forgot_password_bloc.dart';
+import 'package:ticket_plane_app/screen/infomationsingup/bloc/infomation_signup_bloc.dart';
+import 'package:ticket_plane_app/screen/infomationsingup/data/user_info_repository.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_bloc.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_event.dart';
 import 'package:ticket_plane_app/screen/login/bloc/login_bloc.dart';
@@ -35,6 +38,12 @@ class MainApp extends StatelessWidget {
         BlocProvider<SignupBloc>(
           create: (context) => SignupBloc(),
         ),
+        BlocProvider<UserInfoBloc>(
+          create: (context) => UserInfoBloc(
+              userInfoRepository: UserInfoRepository(), userId: ''),
+        ),
+        BlocProvider<ForgotPasswordBloc>(
+            create: (context) => ForgotPasswordBloc()),
         BlocProvider<HomeBloc>(
           create: (context) => HomeBloc(),
         ),

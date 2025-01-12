@@ -66,6 +66,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     final isPasswordValid = _validatePassword(state.password);
     final isComfirmPasswordValid =
         _validateConfirmPassword(state.confirmPassword, state.password);
+
     if (!isEmailValid) {
       emit(state.copyWith(
         isEmailValid: false,
@@ -74,6 +75,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
       ));
       return;
     }
+
     if (!isPasswordValid) {
       emit(state.copyWith(
         isEmailValid: false,
@@ -119,19 +121,16 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
   }
 
   bool _validateEmail(String email) {
-    // Sử dụng biểu thức chính quy để kiểm tra email
     return RegExp(
             r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
         .hasMatch(email);
   }
 
   bool _validatePassword(String password) {
-    // Kiểm tra độ dài mật khẩu
     return password.length >= 6;
   }
 
   bool _validateConfirmPassword(String confirmPassword, String password) {
-    // Kiểm tra mật khẩu và mật khẩu xác nhận
     return confirmPassword == password;
   }
 }

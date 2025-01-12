@@ -62,3 +62,5 @@ class UserInfoDateOfBirthChanged extends UserInfoEvent {
 }
 
 class UserInfoSubmitted extends UserInfoEvent {}
+
+class UserInfoLoading extends UserInfoEvent {}

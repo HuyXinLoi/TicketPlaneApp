@@ -1,3 +1,4 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -5,67 +6,74 @@ import 'package:intl/intl.dart';
 import 'package:ticket_plane_app/screen/infomationsingup/bloc/infomation_signup_bloc.dart';
 import 'package:ticket_plane_app/screen/infomationsingup/data/user_info_repository.dart';
 
-class UserInfoScreen extends StatelessWidget {
+class UserInfoScreen extends StatefulWidget {
   final String userId;
   const UserInfoScreen({super.key, required this.userId});
 
   @override
+  State<UserInfoScreen> createState() => _UserInfoScreenState();
+}
+
+class _UserInfoScreenState extends State<UserInfoScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => UserInfoBloc(
-        userInfoRepository: UserInfoRepository(),
-        userId: userId,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Thông Tin Cá Nhân',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('User Information',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          backgroundColor: Colors.blue,
-          iconTheme: const IconThemeData(color: Colors.white),
-        ),
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 46, 24, 240),
-                Color.fromARGB(255, 61, 166, 252),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 46, 24, 240),
+              Color.fromARGB(255, 61, 166, 252),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          child: BlocListener<UserInfoBloc, UserInfoState>(
-            listener: (context, state) {
-              if (state.status == UserInfoStatus.success) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('User information saved successfully!',
-                        style: TextStyle(color: Colors.black)),
-                    backgroundColor: Colors.greenAccent,
-                  ),
-                );
-                context.go('/nav');
-              } else if (state.status == UserInfoStatus.failure) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Error: ${state.errorMessage}',
-                        style: const TextStyle(color: Colors.white)),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            child: Stack(
-              children: [
-                SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
+        ),
+        child: BlocListener<UserInfoBloc, UserInfoState>(
+          listener: (context, state) {
+            if (state.status == UserInfoStatus.success) {
+              context.go('/nav');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Đăng Ký Thành Công!',
+                      style: TextStyle(color: Colors.black)),
+                  backgroundColor: Colors.greenAccent,
+                ),
+              );
+            } else if (state.status == UserInfoStatus.failure) {
+              Flushbar(
+                message: state.errorMessage,
+                margin: const EdgeInsets.all(8),
+                borderRadius: BorderRadius.circular(8),
+                backgroundColor: Colors.redAccent,
+                duration: const Duration(seconds: 3),
+                flushbarPosition: FlushbarPosition.TOP,
+                icon: const Icon(
+                  Icons.error,
+                  size: 28,
+                  color: Colors.white,
+                ),
+              ).show(context);
+            }
+          },
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      //  _buildTitle(),
-                      // const SizedBox(height: 32),
                       _buildNameField(),
                       const SizedBox(height: 16),
                       _buildPhoneNumberField(),
@@ -81,46 +89,19 @@ class UserInfoScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                Positioned(
-                  left: 24,
-                  right: 24,
-                  bottom: 24,
-                  child: _buildSubmitButton(),
-                ),
-              ],
-            ),
+              ),
+              Positioned(
+                left: 24,
+                right: 24,
+                bottom: 24,
+                child: _buildSubmitButton(),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
-
-  // Widget _buildTitle() {
-  //   return const Padding(
-  //     padding: EdgeInsets.only(bottom: 32.0, left: 15.0, top: 10.0),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Text(
-  //           'Your Information',
-  //           style: TextStyle(
-  //             fontSize: 32,
-  //             fontWeight: FontWeight.bold,
-  //             color: Colors.white,
-  //           ),
-  //         ),
-  //         SizedBox(height: 8),
-  //         Text(
-  //           'Please fill in the details below',
-  //           style: TextStyle(
-  //             fontSize: 16,
-  //             color: Colors.white70,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _buildNameField() {
     return BlocBuilder<UserInfoBloc, UserInfoState>(
@@ -131,7 +112,7 @@ class UserInfoScreen extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(left: 25.0, bottom: 5.0, top: 8.0),
               child: Text(
-                'Name',
+                'Tên',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -142,8 +123,6 @@ class UserInfoScreen extends StatelessWidget {
               initialValue: state.name,
               style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
-                // labelText: 'Name',
-                // labelStyle: const TextStyle(color: Colors.black),
                 prefixIcon: const Icon(Icons.person, color: Colors.grey),
                 filled: true,
                 fillColor: Colors.white,
@@ -173,7 +152,7 @@ class UserInfoScreen extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(left: 25.0, bottom: 5.0, top: 8.0),
               child: Text(
-                'Phone Number',
+                'Số Điện Thoại',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -184,8 +163,6 @@ class UserInfoScreen extends StatelessWidget {
               initialValue: state.phoneNumber,
               style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
-                // labelText: 'Phone Number',
-                // labelStyle: const TextStyle(color: Colors.black),
                 prefixIcon: const Icon(Icons.phone, color: Colors.grey),
                 filled: true,
                 fillColor: Colors.white,
@@ -216,7 +193,7 @@ class UserInfoScreen extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(left: 25.0, bottom: 5.0, top: 8.0),
               child: Text(
-                'Address',
+                'Địa Chỉ',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -227,8 +204,6 @@ class UserInfoScreen extends StatelessWidget {
               initialValue: state.address,
               style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
-                // labelText: 'Address',
-                // labelStyle: const TextStyle(color: Colors.black),
                 prefixIcon: const Icon(Icons.location_on, color: Colors.grey),
                 filled: true,
                 fillColor: Colors.white,
@@ -258,7 +233,7 @@ class UserInfoScreen extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(left: 25.0, bottom: 5.0, top: 8.0),
               child: Text(
-                'Gender',
+                'Giới Tính',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -270,8 +245,6 @@ class UserInfoScreen extends StatelessWidget {
               dropdownColor: Colors.white,
               style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
-                // labelText: 'Gender',
-                // labelStyle: const TextStyle(color: Colors.black),
                 prefixIcon: const Icon(Icons.people, color: Colors.grey),
                 filled: true,
                 fillColor: Colors.white,
@@ -283,15 +256,13 @@ class UserInfoScreen extends StatelessWidget {
               items: const [
                 DropdownMenuItem(
                     value: 'Male',
-                    child: Text('Male', style: TextStyle(color: Colors.black))),
+                    child: Text('Nam', style: TextStyle(color: Colors.black))),
                 DropdownMenuItem(
                     value: 'Female',
-                    child:
-                        Text('Female', style: TextStyle(color: Colors.black))),
+                    child: Text('Nữ', style: TextStyle(color: Colors.black))),
                 DropdownMenuItem(
                     value: 'Other',
-                    child:
-                        Text('Other', style: TextStyle(color: Colors.black))),
+                    child: Text('Khác', style: TextStyle(color: Colors.black))),
               ],
               onChanged: (value) {
                 context
@@ -314,7 +285,7 @@ class UserInfoScreen extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(left: 25.0, bottom: 5.0, top: 8.0),
               child: Text(
-                'Passport',
+                'Hộ Chiếu',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -325,8 +296,6 @@ class UserInfoScreen extends StatelessWidget {
               initialValue: state.passport,
               style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
-                // labelText: 'Passport',
-                // labelStyle: const TextStyle(color: Colors.black),
                 prefixIcon: const Icon(Icons.book, color: Colors.grey),
                 filled: true,
                 fillColor: Colors.white,
@@ -356,7 +325,7 @@ class UserInfoScreen extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(left: 25.0, bottom: 5.0, top: 8.0),
               child: Text(
-                'Date of Birth',
+                'Ngày Sinh',
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -378,8 +347,6 @@ class UserInfoScreen extends StatelessWidget {
               },
               child: InputDecorator(
                 decoration: InputDecoration(
-                  // labelText: 'Date of Birth',
-                  // labelStyle: const TextStyle(color: Colors.black),
                   prefixIcon:
                       const Icon(Icons.calendar_today, color: Colors.grey),
                   filled: true,
@@ -425,7 +392,7 @@ class UserInfoScreen extends StatelessWidget {
           child: state.status == UserInfoStatus.loading
               ? const CircularProgressIndicator()
               : const Text(
-                  'Submit',
+                  'Đăng Ký',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
