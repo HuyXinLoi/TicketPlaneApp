@@ -4,7 +4,6 @@ import 'package:ticket_plane_app/screen/profile/passenger.dart';
 class PassengerRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Giữ nguyên hàm getUserById để lấy thông tin cơ bản từ bảng passengers
   Future<Passenger?> getUserById(String userId) async {
     if (userId.isEmpty) {
       print("Error: userId is empty.");

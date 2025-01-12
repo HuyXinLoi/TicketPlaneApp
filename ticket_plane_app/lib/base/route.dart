@@ -9,6 +9,7 @@ import 'package:ticket_plane_app/screen/login/data/login_gg.dart';
 import 'package:ticket_plane_app/screen/login/login_facebook.dart';
 import 'package:ticket_plane_app/screen/login/login_screen.dart';
 import 'package:ticket_plane_app/screen/navigationbar/bottom_navigationbar_screen.dart';
+import 'package:ticket_plane_app/screen/profile/ChangePasswordScreen';
 import 'package:ticket_plane_app/screen/profile/auth_repository.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_bloc.dart';
 import 'package:ticket_plane_app/screen/profile/passenger_repository.dart';
@@ -47,20 +48,13 @@ class AppRouter {
         name: 'profile',
         path: '/profile',
         builder: (context, state) {
-          return BlocBuilder<LoginBloc, LoginState>(
-            builder: (context, loginState) {
-              if (loginState.status == LoginStates.success) {
-                return ProfileScreen(
-                  userId: FirebaseAuth.instance.currentUser != null
-                      ? FirebaseAuth.instance.currentUser!.uid
-                      : "",
-                );
-              } else {
-                return const LoginScreen();
-              }
-            },
-          );
+          return const ProfileScreen();
         },
+      ),
+      GoRoute(
+        name: 'change_password',
+        path: '/change_password',
+        builder: (context, state) => const ChangePasswordScreen(),
       ),
       GoRoute(
         path: '/signup',
