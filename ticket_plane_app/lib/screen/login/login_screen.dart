@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/screen/login/bloc/login_bloc.dart';
 import 'package:ticket_plane_app/screen/login/bloc/login_event.dart';
 import 'package:ticket_plane_app/screen/login/bloc/login_state.dart';
+import 'package:local_auth/local_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +19,72 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
+  final String _isBiometricsEnabledKey = 'isBiometricsEnabled';
+  final String _usernameKey = 'username';
+  bool _isBiometricsEnabled = false;
+  String _username = '';
+  final LocalAuthentication auth = LocalAuthentication();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isBiometricsEnabled = prefs.getBool(_isBiometricsEnabledKey) ?? false;
+      _username = prefs.getString(_usernameKey) ?? '';
+    });
+  }
+
+  Future<void> _authenticateWithBiometrics() async {
+    bool authenticated = false;
+    try {
+      authenticated = await auth.authenticate(
+        localizedReason: 'Scan your fingerprint to authenticate',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: true,
+        ),
+      );
+    } catch (e) {
+      print(e);
+      Flushbar(
+        message: "Error during biometric authentication",
+        margin: const EdgeInsets.all(8),
+        borderRadius: BorderRadius.circular(8),
+        backgroundColor: Colors.redAccent,
+        duration: const Duration(seconds: 3),
+        flushbarPosition: FlushbarPosition.TOP,
+        icon: const Icon(
+          Icons.error,
+          size: 28,
+          color: Colors.white,
+        ),
+      ).show(context);
+      return;
+    }
+
+    if (authenticated) {
+      context.go('/nav');
+    } else {
+      Flushbar(
+        message: "Authentication Failed",
+        margin: const EdgeInsets.all(8),
+        borderRadius: BorderRadius.circular(8),
+        backgroundColor: Colors.redAccent,
+        duration: const Duration(seconds: 3),
+        flushbarPosition: FlushbarPosition.TOP,
+        icon: const Icon(
+          Icons.error,
+          size: 28,
+          color: Colors.white,
+        ),
+      ).show(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,24 +122,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Logo or Title
                         _buildTitle(),
                         const SizedBox(height: 40),
-                        // Email and password fields
                         _buildEmailField(),
                         const SizedBox(height: 20),
                         _buildPasswordField(),
                         const SizedBox(height: 30),
-                        // Login button
-                        _buildLoginButton(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildLoginButton(),
+                            if (_isBiometricsEnabled) ...[
+                              const SizedBox(width: 20),
+                              _buildBiometricsButton(),
+                            ],
+                          ],
+                        ),
                         const SizedBox(height: 20),
-                        // Divider
                         _buildDivider(),
                         const SizedBox(height: 20),
-                        // Social login buttons
                         _buildSocialLoginButtons(context),
                         const SizedBox(height: 30),
-                        // Sign up link
                         _buildSignUpLink(),
                       ],
                     ),
@@ -103,9 +174,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildTitle() {
     return Column(
       children: [
-        const Text(
-          'Welcome Back!',
-          style: TextStyle(
+        Text(
+          _username.isNotEmpty ? 'Welcome Back, $_username!' : 'Welcome Back!',
+          style: const TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -206,7 +277,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.purple,
                   padding:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 100),
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -220,6 +291,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               );
       },
+    );
+  }
+
+  Widget _buildBiometricsButton() {
+    return IconButton(
+      onPressed: _authenticateWithBiometrics,
+      icon: const Icon(Icons.fingerprint),
+      iconSize: 40,
+      color: Colors.purple,
     );
   }
 

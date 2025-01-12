@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ticket_plane_app/screen/infomationsingup/bloc/infomation_signup_bloc.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_bloc.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_event.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_state.dart';

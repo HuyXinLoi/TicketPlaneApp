@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:go_router/go_router.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -10,9 +11,93 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final String _isBiometricsEnabledKey = 'isBiometricsEnabled';
+  final LocalAuthentication auth = LocalAuthentication();
+
+  Future<bool> _authenticateWithBiometrics() async {
+    try {
+      return await auth.authenticate(
+        localizedReason: 'Vui lòng xác thực bằng vân tay để tiếp tục.',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: true,
+        ),
+      );
+    } catch (e) {
+      print('Lỗi xác thực sinh trắc học: $e');
+      return false;
+    }
+  }
+
+  Future<void> _toggleBiometrics(bool value) async {
+    if (value) {
+      final authenticated = await _authenticateWithBiometrics();
+      if (!authenticated) {
+        return; // Nếu xác thực thất bại, không thay đổi trạng thái.
+      }
+    }
+    await _setBiometricsEnabled(value);
+    setState(() {});
+  }
+
+  Future<void> _setBiometricsEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isBiometricsEnabledKey, value);
+  }
+
+  Future<bool> _getBiometricsEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_isBiometricsEnabledKey) ?? false;
+  }
+
+  void _showBiometricsScreen(BuildContext context) async {
+    bool isBiometricsEnabled = await _getBiometricsEnabled();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Sinh trắc học',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Bật/Tắt Sinh trắc học'),
+                      Switch(
+                        value: isBiometricsEnabled,
+                        onChanged: (value) async {
+                          await _toggleBiometrics(value);
+                          setModalState(() {
+                            isBiometricsEnabled = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Xóa tất cả dữ liệu lưu trữ
+    // await prefs.clear(); // Nếu cần xóa toàn bộ dữ liệu lưu trữ
     context.go('/login'); // Điều hướng về màn hình đăng nhập
   }
 
@@ -109,15 +194,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 10),
                           _buildInfoItem(
                               Icons.email, 'Email', 'nguyenvana@example.com'),
-                          _buildInfoItem(Icons.phone, 'Số điện thoại',
-                              '+84123456789'),
+                          _buildInfoItem(
+                              Icons.phone, 'Số điện thoại', '+84123456789'),
                           _buildInfoItem(Icons.location_on, 'Địa chỉ',
                               '123 Đường ABC, Quận XYZ, Thành phố HCM'),
-                          _buildInfoItem(Icons.card_membership, 'Passport',
-                              'A1234567'),
+                          _buildInfoItem(
+                              Icons.card_membership, 'Passport', 'A1234567'),
                           _buildInfoItem(Icons.cake, 'Ngày sinh', '01/01/1990'),
 
                           const SizedBox(height: 30),
+
+                          // Biometrics Button
+                          Center(
+                            child: ElevatedButton(
+                              onPressed: () => _showBiometricsScreen(context),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 15, horizontal: 60),
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              child: const Text(
+                                'Sinh trắc học',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
 
                           // Logout Button
                           Center(

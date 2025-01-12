@@ -5,16 +5,28 @@ import 'package:intl/intl.dart';
 import 'package:ticket_plane_app/screen/infomationsingup/bloc/infomation_signup_bloc.dart';
 import 'package:ticket_plane_app/screen/infomationsingup/data/user_info_repository.dart';
 
-class UserInfoScreen extends StatelessWidget {
+class UserInfoScreen extends StatefulWidget {
   final String userId;
   const UserInfoScreen({super.key, required this.userId});
+
+  @override
+  State<UserInfoScreen> createState() => _UserInfoScreenState();
+}
+
+class _UserInfoScreenState extends State<UserInfoScreen> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    context.read<UserInfoBloc>().add(UserInfoLoading());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => UserInfoBloc(
         userInfoRepository: UserInfoRepository(),
-        userId: userId,
+        userId: widget.userId,
       ),
       child: Scaffold(
         appBar: AppBar(
@@ -96,32 +108,6 @@ class UserInfoScreen extends StatelessWidget {
   }
 
   // Widget _buildTitle() {
-  //   return const Padding(
-  //     padding: EdgeInsets.only(bottom: 32.0, left: 15.0, top: 10.0),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Text(
-  //           'Your Information',
-  //           style: TextStyle(
-  //             fontSize: 32,
-  //             fontWeight: FontWeight.bold,
-  //             color: Colors.white,
-  //           ),
-  //         ),
-  //         SizedBox(height: 8),
-  //         Text(
-  //           'Please fill in the details below',
-  //           style: TextStyle(
-  //             fontSize: 16,
-  //             color: Colors.white70,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   Widget _buildNameField() {
     return BlocBuilder<UserInfoBloc, UserInfoState>(
       builder: (context, state) {

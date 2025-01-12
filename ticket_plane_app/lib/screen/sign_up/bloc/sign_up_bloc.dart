@@ -66,6 +66,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     final isPasswordValid = _validatePassword(state.password);
     final isComfirmPasswordValid =
         _validateConfirmPassword(state.confirmPassword, state.password);
+
     if (!isEmailValid) {
       emit(state.copyWith(
         isEmailValid: false,
@@ -74,6 +75,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
       ));
       return;
     }
+
     if (!isPasswordValid) {
       emit(state.copyWith(
         isEmailValid: false,

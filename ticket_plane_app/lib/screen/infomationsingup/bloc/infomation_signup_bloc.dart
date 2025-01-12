@@ -56,6 +56,29 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
       UserInfoSubmitted event, Emitter<UserInfoState> emit) async {
     emit(state.copyWith(status: UserInfoStatus.loading));
 
+    if (state.name.isEmpty) {
+      emit(state.copyWith(
+          status: UserInfoStatus.failure,
+          errorMessage: 'Bạn không có tên sao ?'));
+    }
+
+    if (state.address.isEmpty) {
+      emit(state.copyWith(
+          status: UserInfoStatus.failure,
+          errorMessage: 'Bạn vô gia cư hả à ?'));
+    }
+
+    if (state.phoneNumber.isEmpty) {
+      emit(state.copyWith(
+          status: UserInfoStatus.failure,
+          errorMessage: 'Bạn không có số điện thoại à ?'));
+    } else if (!RegExp(r'^[0-9]{10}$').hasMatch(state.phoneNumber) ||
+        state.phoneNumber.length < 9) {
+      emit(state.copyWith(
+          status: UserInfoStatus.failure,
+          errorMessage: 'Vui lòng nhập đúng định dạng ?'));
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString('userId');
