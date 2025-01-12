@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,17 +20,34 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _checkFirstTime();
     internetConnection();
     checkLogin();
   }
 
+  Future<void> _checkFirstTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isFirstTime = prefs.getBool('isFirstTime') ?? true;
+
+    if (isFirstTime) {
+      // Đánh dấu đã xem SplashScreen
+      await prefs.setBool('isFirstTime', false);
+      await Future.delayed(
+          Duration(seconds: 3)); // Hiện SplashScreen trong 3 giây
+      if (mounted) context.go('/intro');
+    } else {
+      // Nếu không phải lần đầu, chuyển thẳng đến login
+      await Future.delayed(
+          Duration(seconds: 3)); // Hiện SplashScreen trong 3 giây
+      if (mounted) context.go('/login');
+    }
+  }
+
   void checkLogin() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedUsername = prefs.getString('username');
-    final savedPassword = prefs.getString('password');
+    final userId = prefs.getString('userId');
 
-    if (savedUsername != null && savedPassword != null) {
-      print('User is already logged in: \$savedUsername');
+    if (userId != null) {
       context.go('/nav');
     }
   }
@@ -45,8 +61,6 @@ class _SplashScreenState extends State<SplashScreen> {
         setState(() {
           isLoading = false;
         });
-        await Future.delayed(Duration(seconds: 5));
-        context.go('/intro');
       }
     });
   }
@@ -72,8 +86,9 @@ class _SplashScreenState extends State<SplashScreen> {
                     await InternetConnectionChecker().hasConnection;
                 Navigator.pop(context);
                 if (isDeviceConnection) {
-                  await Future.delayed(Duration(seconds: 5));
-                  context.go('/intro');
+                  setState(() {
+                    isLoading = false;
+                  });
                 } else {
                   showDialogBox();
                 }

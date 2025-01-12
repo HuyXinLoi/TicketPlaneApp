@@ -1,8 +1,10 @@
-part of 'destination_bloc.dart';
+import 'package:equatable/equatable.dart';
 
-sealed class DestinationEvent extends Equatable {
+abstract class DestinationEvent extends Equatable {
   const DestinationEvent();
 
   @override
   List<Object> get props => [];
 }
+
+class LoadDestinations extends DestinationEvent {}
