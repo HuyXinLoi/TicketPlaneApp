@@ -337,14 +337,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
       },
       child: RichText(
         text: const TextSpan(
-          text: 'Already have an account? ',
+          text: 'Bạn Đã Có Tài Khoản? ',
           style: TextStyle(
             color: Colors.white70,
             fontSize: 16,
           ),
           children: [
             TextSpan(
-              text: 'Sign In',
+              text: 'Đăng Nhập Ngay',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
