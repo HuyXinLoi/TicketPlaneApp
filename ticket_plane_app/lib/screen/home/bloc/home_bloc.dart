@@ -18,6 +18,28 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       LoadHomeData event, Emitter<HomeState> emit) async {
     emit(state.copyWith(status: HomeStatus.loading));
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
+      String? userName;
+      String? userImageUrl;
+      if (userId != null) {
+        try {
+          DocumentSnapshot userDoc = await FirebaseFirestore.instance
+              .collection('passengers')
+              .doc(userId)
+              .get();
+
+          if (userDoc.exists) {
+            userName = userDoc.get('name');
+            userImageUrl = userDoc.get('urlImage');
+          } else {
+            print('User document not found.');
+          }
+        } catch (e) {
+          print('Error fetching user data: $e');
+        }
+      }
+
       QuerySnapshot flightsSnapshot =
           await _firestore.collection('flight').get();
       List<Flight> flights = flightsSnapshot.docs
@@ -39,15 +61,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               doc.data() as Map<String, dynamic>, doc.id))
           .toList();
 
-      final prefs = await SharedPreferences.getInstance();
       final username = prefs.getString('email');
       emit(state.copyWith(
-        status: HomeStatus.success,
-        flights: flights,
-        username: username,
-        discounts: discounts,
-        arrivalCities: arrivalCities, // Thêm danh sách điểm đến vào state
-      ));
+          status: HomeStatus.success,
+          flights: flights,
+          username: username,
+          discounts: discounts,
+          arrivalCities: arrivalCities,
+          userName: userName,
+          userImageUrl: userImageUrl));
     } catch (e) {
       emit(state.copyWith(
         status: HomeStatus.failure,

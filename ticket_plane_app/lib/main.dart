@@ -7,6 +7,7 @@ import 'package:ticket_plane_app/screen/home/bloc/home_bloc.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_event.dart';
 import 'package:ticket_plane_app/screen/login/bloc/login_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ticket_plane_app/screen/search/bloc/search_bloc.dart';
 import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_bloc.dart';
 
 void main() async {
@@ -33,6 +34,9 @@ class MainApp extends StatelessWidget {
         ),
         BlocProvider<HomeBloc>(
           create: (context) => HomeBloc(),
+        ),
+        BlocProvider<SearchBloc>(
+          create: (context) => SearchBloc(),
         ),
         // Thêm các BLoC khác nếu cần
       ],

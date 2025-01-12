@@ -1,11 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_bloc.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_event.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_state.dart';
-import 'package:ticket_plane_app/screen/home/discount_detail_screen.dart';
-import 'package:ticket_plane_app/units/api_service.dart';
+import 'package:ticket_plane_app/screen/discount_detail/discount_detail_screen.dart';
 import '../search/search_screen.dart';
 
 // Import các class từ thư mục data
@@ -20,20 +20,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String? username;
-  // Khởi tạo ApiService
+  String? userId;
+  String? userName;
   @override
   void initState() {
     super.initState();
     context.read<HomeBloc>().add(LoadHomeData());
-    _loadUsername();
-  }
-
-  Future<void> _loadUsername() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      username = prefs.getString('username');
-    });
   }
 
   @override
@@ -94,17 +86,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       Row(
                         children: [
                           GestureDetector(
-                            onTap: () {
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //       builder: (context) => const ProfileScreen()),
-                              // );
-                            },
-                            child: const CircleAvatar(
+                            onTap: () {},
+                            child: CircleAvatar(
                               radius: 25,
-                              backgroundImage: NetworkImage(
-                                  'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1287&q=80'),
+                              backgroundImage: state.userImageUrl != null
+                                  ? NetworkImage('${state.userImageUrl!}')
+                                  : NetworkImage(
+                                      'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -119,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Text(
-                                username ?? "username",
+                                state.userName ?? userId ?? "username",
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -243,19 +231,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               DiscountDetailScreen(
-                                            title: state.discounts[index].moTa,
-                                            imageUrl:
-                                                state.discounts[index].anh,
-                                            htmlContent: state
-                                                .discounts[index].moTaChiTiet,
-                                            phamVi:
-                                                state.discounts[index].phamVi,
-                                            thoiGianBatDau: state
-                                                .discounts[index]
-                                                .thoiGianBatDau, // DateTime
-                                            thoiGianKetThuc: state
-                                                .discounts[index]
-                                                .thoiGianKetThuc, // DateTime
+                                            discountId:
+                                                state.discounts[index].id,
                                           ),
                                         ),
                                       );

@@ -11,6 +11,8 @@ class HomeState extends Equatable {
   final String? username;
   final List<Discount> discounts;
   final List<String> arrivalCities; // Thêm danh sách điểm đến
+  final String? userName;
+  final String? userImageUrl;
 
   const HomeState({
     this.status = HomeStatus.initial,
@@ -19,6 +21,8 @@ class HomeState extends Equatable {
     this.username,
     this.discounts = const [],
     this.arrivalCities = const [], // Khởi tạo danh sách rỗng
+    this.userName,
+    this.userImageUrl,
   });
 
   HomeState copyWith({
@@ -28,6 +32,8 @@ class HomeState extends Equatable {
     String? username,
     List<Discount>? discounts,
     List<String>? arrivalCities, // Thêm vào copyWith
+    String? userName,
+    String? userImageUrl,
   }) {
     return HomeState(
       status: status ?? this.status,
@@ -36,10 +42,20 @@ class HomeState extends Equatable {
       username: username ?? this.username,
       discounts: discounts ?? this.discounts,
       arrivalCities: arrivalCities ?? this.arrivalCities, // Thêm vào copyWith
+      userName: userName ?? this.userName,
+      userImageUrl: userImageUrl ?? this.userImageUrl,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [status, flights, errorMessage, username, discounts, arrivalCities];
+  List<Object?> get props => [
+        status,
+        flights,
+        errorMessage,
+        username,
+        discounts,
+        arrivalCities,
+        userName,
+        userImageUrl,
+      ];
 }

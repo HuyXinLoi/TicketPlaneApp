@@ -4,12 +4,14 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login_event.dart';
 import 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   LoginBloc() : super(const LoginState()) {
     on<LoginEmailChanged>(_onEmailChanged);
@@ -61,13 +63,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     // Sau khi kiểm tra hợp lệ, gọi Firebase
     emit(state.copyWith(status: LoginStates.loading));
     try {
-      await _auth.signInWithEmailAndPassword(
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: state.email,
         password: state.password,
       );
+      // Lưu userId vào SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      final savedUsername = prefs.setString('username', state.email);
-      final savedPassword = prefs.setString('password', state.password);
+      await prefs.setString('userId', userCredential.user!.uid);
       emit(state.copyWith(status: LoginStates.success));
     } on FirebaseAuthException catch (e) {
       String errorMessage =
@@ -98,10 +100,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     try {
       // 1. Trigger Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // User cancelled the sign in
+        emit(state.copyWith(
+            status: LoginStates.failure,
+            errorMessage: 'Google Sign-In cancelled.'));
+        return;
+      }
 
       // 2. Get authentication details
       final GoogleSignInAuthentication googleAuth =
-          await googleUser!.authentication;
+          await googleUser.authentication;
 
       // 3. Create a new credential
       final OAuthCredential credential = GoogleAuthProvider.credential(
@@ -113,7 +122,21 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
 
-      // 5. (Optional) Save user info to SharedPreferences, database, etc.
+      // 5. Save user info to Firestore in the "passengers" collection
+      await _firestore
+          .collection('passengers')
+          .doc(userCredential.user!.uid)
+          .set({
+        'DOB': FieldValue
+            .serverTimestamp(), // Placeholder for now, you should get this from user input later
+        'DiaChi': '', // Placeholder, get this from user input
+        'Email': userCredential.user!.email,
+        'GioiTinh': 0, // Placeholder, consider using an enum or boolean
+        'Name': userCredential.user!.displayName,
+        'PassPort': '', // Placeholder, get this from user input
+        'UserId': userCredential.user!.uid,
+        'urlImage': userCredential.user!.photoURL,
+      }, SetOptions(merge: true));
 
       emit(state.copyWith(status: LoginStates.success));
       event.context.go('/nav');
@@ -136,20 +159,33 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     try {
       // 1. Trigger Facebook Login flow
       final LoginResult result = await FacebookAuth.instance.login();
-
       if (result.status == LoginStatus.success) {
         // 2. Get access token
         final AccessToken accessToken = result.accessToken!;
-
         // 3. Create a new credential
         final OAuthCredential credential =
             FacebookAuthProvider.credential(accessToken.tokenString);
-
         // 4. Sign in with Firebase
         final UserCredential userCredential =
             await _auth.signInWithCredential(credential);
+        // 5. Save user info to Firestore in the "passengers" collection
+        final userData = await FacebookAuth.instance.getUserData();
 
-        // 5. (Optional) Save user info
+        await _firestore
+            .collection('passengers')
+            .doc(userCredential.user!.uid)
+            .set({
+          'DOB': FieldValue
+              .serverTimestamp(), // Placeholder, get this from user input
+          'DiaChi': '', // Placeholder, get this from user input
+          'Email': userData['email'],
+          'GioiTinh': 0, // Placeholder, consider using an enum or boolean
+          'Name': userData['name'],
+          'PassPort': '', // Placeholder, get this from user input
+          'UserId': userCredential.user!.uid,
+          'urlImage': userData['picture']['data']['url'],
+        }, SetOptions(merge: true));
+
         emit(state.copyWith(status: LoginStates.success));
         event.context.go('/nav');
       } else {
