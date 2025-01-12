@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:ticket_plane_app/screen/forgotpassword/forgot_passsword_screen.dart';
 import 'package:ticket_plane_app/screen/infomationsingup/screen/infomation_signup_screen.dart';
 import 'package:ticket_plane_app/screen/introduction/introduction_screen.dart';
 import 'package:ticket_plane_app/screen/login/data/login_gg.dart';
@@ -48,6 +49,11 @@ class AppRouter {
         path: '/user-info/:userId',
         builder: (context, state) =>
             UserInfoScreen(userId: state.pathParameters['userId']!),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        name: 'forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
     ],
   );

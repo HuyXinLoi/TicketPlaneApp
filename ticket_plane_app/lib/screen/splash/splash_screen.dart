@@ -30,15 +30,11 @@ class _SplashScreenState extends State<SplashScreen> {
     final isFirstTime = prefs.getBool('isFirstTime') ?? true;
 
     if (isFirstTime) {
-      // Đánh dấu đã xem SplashScreen
       await prefs.setBool('isFirstTime', false);
-      await Future.delayed(
-          Duration(seconds: 3)); // Hiện SplashScreen trong 3 giây
+      await Future.delayed(Duration(seconds: 3));
       if (mounted) context.go('/intro');
     } else {
-      // Nếu không phải lần đầu, chuyển thẳng đến login
-      await Future.delayed(
-          Duration(seconds: 3)); // Hiện SplashScreen trong 3 giây
+      await Future.delayed(Duration(seconds: 3));
       if (mounted) context.go('/login');
     }
   }
@@ -73,8 +69,8 @@ class _SplashScreenState extends State<SplashScreen> {
       context: context,
       builder: (context) {
         return CupertinoAlertDialog(
-          title: Text('Your connection is lost'),
-          content: Text('Please check your connection'),
+          title: Text('Mất Kết Nối - Quang Hùng MasterD'),
+          content: Text('Kiểm Tra Mạng Của Bạn'),
           actions: [
             TextButton(
               onPressed: () async {

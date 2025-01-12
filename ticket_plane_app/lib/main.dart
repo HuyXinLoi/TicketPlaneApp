@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ticket_plane_app/base/route.dart';
+import 'package:ticket_plane_app/screen/forgotpassword/bloc/forgot_password_bloc.dart';
 import 'package:ticket_plane_app/screen/infomationsingup/bloc/infomation_signup_bloc.dart';
 import 'package:ticket_plane_app/screen/infomationsingup/data/user_info_repository.dart';
 import 'package:ticket_plane_app/screen/login/bloc/login_bloc.dart';
@@ -35,6 +36,8 @@ class MainApp extends StatelessWidget {
           create: (context) => UserInfoBloc(
               userInfoRepository: UserInfoRepository(), userId: ''),
         ),
+        BlocProvider<ForgotPasswordBloc>(
+            create: (context) => ForgotPasswordBloc()),
         // Thêm các BLoC khác nếu cần
       ],
       child: MaterialApp.router(

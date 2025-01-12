@@ -24,32 +24,36 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
     on<UserInfoSubmitted>(_onSubmitted);
   }
   void _onNameChanged(UserInfoNameChanged event, Emitter<UserInfoState> emit) {
-    emit(state.copyWith(name: event.name));
+    emit(state.copyWith(name: event.name, status: UserInfoStatus.initial));
   }
 
   void _onPhoneNumberChanged(
       UserInfoPhoneNumberChanged event, Emitter<UserInfoState> emit) {
-    emit(state.copyWith(phoneNumber: event.phoneNumber));
+    emit(state.copyWith(
+        phoneNumber: event.phoneNumber, status: UserInfoStatus.initial));
   }
 
   void _onAddressChanged(
       UserInfoAddressChanged event, Emitter<UserInfoState> emit) {
-    emit(state.copyWith(address: event.address));
+    emit(
+        state.copyWith(address: event.address, status: UserInfoStatus.initial));
   }
 
   void _onGenderChanged(
       UserInfoGenderChanged event, Emitter<UserInfoState> emit) {
-    emit(state.copyWith(gender: event.gender));
+    emit(state.copyWith(gender: event.gender, status: UserInfoStatus.initial));
   }
 
   void _onPassportChanged(
       UserInfoPassportChanged event, Emitter<UserInfoState> emit) {
-    emit(state.copyWith(passport: event.passport));
+    emit(state.copyWith(
+        passport: event.passport, status: UserInfoStatus.initial));
   }
 
   void _onDateOfBirthChanged(
       UserInfoDateOfBirthChanged event, Emitter<UserInfoState> emit) {
-    emit(state.copyWith(dateOfBirth: event.dateOfBirth));
+    emit(state.copyWith(
+        dateOfBirth: event.dateOfBirth, status: UserInfoStatus.initial));
   }
 
   void _onSubmitted(
@@ -60,23 +64,35 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
       emit(state.copyWith(
           status: UserInfoStatus.failure,
           errorMessage: 'Bạn không có tên sao ?'));
-    }
-
-    if (state.address.isEmpty) {
-      emit(state.copyWith(
-          status: UserInfoStatus.failure,
-          errorMessage: 'Bạn vô gia cư hả à ?'));
+      return;
     }
 
     if (state.phoneNumber.isEmpty) {
       emit(state.copyWith(
           status: UserInfoStatus.failure,
           errorMessage: 'Bạn không có số điện thoại à ?'));
-    } else if (!RegExp(r'^[0-9]{10}$').hasMatch(state.phoneNumber) ||
+      return;
+    }
+    if (!RegExp(r'^[0-9]{10}$').hasMatch(state.phoneNumber) ||
         state.phoneNumber.length < 9) {
       emit(state.copyWith(
           status: UserInfoStatus.failure,
-          errorMessage: 'Vui lòng nhập đúng định dạng ?'));
+          errorMessage: 'Vui lòng nhập đúng định dạng số điện thoại!'));
+      return;
+    }
+
+    if (state.address.isEmpty) {
+      emit(state.copyWith(
+          status: UserInfoStatus.failure,
+          errorMessage: 'Bạn vô gia cư hả à ?'));
+      return;
+    }
+
+    if (state.gender.isEmpty) {
+      emit(state.copyWith(
+          status: UserInfoStatus.failure,
+          errorMessage: 'Vui Lòng Nhập Giới Tính!'));
+      return;
     }
 
     try {

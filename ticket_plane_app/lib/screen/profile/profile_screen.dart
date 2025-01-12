@@ -1,4 +1,6 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:go_router/go_router.dart';
@@ -16,15 +18,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<bool> _authenticateWithBiometrics() async {
     try {
-      return await auth.authenticate(
+      final authenticated = await auth.authenticate(
         localizedReason: 'Vui lòng xác thực bằng vân tay để tiếp tục.',
         options: const AuthenticationOptions(
           stickyAuth: true,
           biometricOnly: true,
         ),
       );
-    } catch (e) {
-      print('Lỗi xác thực sinh trắc học: $e');
+      return authenticated;
+    } on PlatformException catch (e) {
+      if (e.code == 'NotAvailable' || e.code == 'NotEnrolled') {
+        Flushbar(
+          message: 'Thiết bị không hỗ trợ hoặc chưa thiết lập sinh trắc học.',
+          margin: const EdgeInsets.all(8),
+          borderRadius: BorderRadius.circular(8),
+          backgroundColor: Colors.orangeAccent,
+          duration: const Duration(seconds: 3),
+          flushbarPosition: FlushbarPosition.TOP,
+          icon: const Icon(
+            Icons.warning,
+            size: 28,
+            color: Colors.white,
+          ),
+        ).show(context);
+      } else {
+        Flushbar(
+          message: 'Xác Thực Sinh Trắc Học Lỗi hoặc bị hủy.',
+          margin: const EdgeInsets.all(8),
+          borderRadius: BorderRadius.circular(8),
+          backgroundColor: Colors.redAccent,
+          duration: const Duration(seconds: 3),
+          flushbarPosition: FlushbarPosition.TOP,
+          icon: const Icon(
+            Icons.error,
+            size: 28,
+            color: Colors.white,
+          ),
+        ).show(context);
+      }
       return false;
     }
   }

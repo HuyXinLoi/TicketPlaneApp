@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
     bool authenticated = false;
     try {
       authenticated = await auth.authenticate(
-        localizedReason: 'Scan your fingerprint to authenticate',
+        localizedReason: 'Quét Vân Tay Để Đăng Nhập',
         options: const AuthenticationOptions(
           stickyAuth: true,
           biometricOnly: true,
@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       print(e);
       Flushbar(
-        message: "Error during biometric authentication",
+        message: "Vân Tay Cùi Bắp",
         margin: const EdgeInsets.all(8),
         borderRadius: BorderRadius.circular(8),
         backgroundColor: Colors.redAccent,
@@ -71,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
       context.go('/nav');
     } else {
       Flushbar(
-        message: "Authentication Failed",
+        message: "Đăng Nhập Thất Bại",
         margin: const EdgeInsets.all(8),
         borderRadius: BorderRadius.circular(8),
         backgroundColor: Colors.redAccent,
@@ -95,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
             context.go('/nav');
           } else if (state.status == LoginStates.failure) {
             Flushbar(
-              message: state.errorMessage ?? 'Login Failed',
+              message: state.errorMessage ?? 'Đăng Nhập Thất Bại',
               margin: const EdgeInsets.all(8),
               borderRadius: BorderRadius.circular(8),
               backgroundColor: Colors.redAccent,
@@ -127,7 +127,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         _buildEmailField(),
                         const SizedBox(height: 20),
                         _buildPasswordField(),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 10),
+                        _buildForgotPasswordLink(),
+                        const SizedBox(height: 20),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -175,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       children: [
         Text(
-          _username.isNotEmpty ? 'Welcome Back, $_username!' : 'Welcome Back!',
+          _username.isNotEmpty ? 'Chào Mừng, $_username!' : 'Xin Chào!',
           style: const TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
@@ -184,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 10),
         const Text(
-          'Log in to continue',
+          'Đăng Nhập Để Bắt Đầu',
           style: TextStyle(
             fontSize: 16,
             color: Colors.white70,
@@ -208,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            hintText: 'Username',
+            hintText: 'Email',
             prefixIcon: const Icon(Icons.person, color: Colors.grey),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
@@ -237,7 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            hintText: 'Password',
+            hintText: 'Mật Khẩu',
             prefixIcon: const Icon(Icons.lock, color: Colors.grey),
             suffixIcon: IconButton(
               icon: Icon(
@@ -283,7 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Log In',
+                  'Đăng Nhập',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -315,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.0),
           child: Text(
-            'OR',
+            'Hoặc',
             style: TextStyle(color: Colors.white70),
           ),
         ),
@@ -371,14 +373,14 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: RichText(
         text: const TextSpan(
-          text: 'Don’t have an account? ',
+          text: 'Bạn Chưa Có Tài Khoản? ',
           style: TextStyle(
             color: Colors.white70,
             fontSize: 16,
           ),
           children: [
             TextSpan(
-              text: 'Sign Up',
+              text: 'Đăng Ký Ngay',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -386,6 +388,21 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForgotPasswordLink() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: () {
+          context.go('/forgot-password');
+        },
+        child: const Text(
+          'Quên Mật Khẩu',
+          style: TextStyle(color: Colors.white70),
         ),
       ),
     );

@@ -15,14 +15,10 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   final appScreens = [
     HomeScreen(),
-    //const SearchScreen(),
     HomeScreen(),
     const Center(child: Text("Tickets")),
-    //const ProfileScreen(),
     const ProfileScreen(),
   ];
-
-  //change our index for BottomNavBar
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
@@ -45,22 +41,18 @@ class _BottomNavBarState extends State<BottomNavBar> {
             BottomNavigationBarItem(
               label: "Home",
               icon: Icon(Icons.home),
-              // activeIcon: Icon()
             ),
             BottomNavigationBarItem(
               label: "Search",
               icon: Icon(Icons.search),
-              // activeIcon: Icon()
             ),
             BottomNavigationBarItem(
               label: "Tickets",
               icon: Icon(Icons.airplane_ticket),
-              // activeIcon: Icon()
             ),
             BottomNavigationBarItem(
               label: "Profile",
               icon: Icon(Icons.person),
-              // activeIcon: Icon()
             )
           ]),
     );
