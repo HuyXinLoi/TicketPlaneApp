@@ -44,25 +44,6 @@ class AppRouter {
         builder: (context, state) => GoogleSignInScreen(),
       ),
       GoRoute(
-        name: 'profile',
-        path: '/profile',
-        builder: (context, state) {
-          return BlocBuilder<LoginBloc, LoginState>(
-            builder: (context, loginState) {
-              if (loginState.status == LoginStates.success) {
-                return ProfileScreen(
-                  userId: FirebaseAuth.instance.currentUser != null
-                      ? FirebaseAuth.instance.currentUser!.uid
-                      : "",
-                );
-              } else {
-                return const LoginScreen();
-              }
-            },
-          );
-        },
-      ),
-      GoRoute(
         path: '/signup',
         builder: (context, state) => SignUpScreen(),
       ),

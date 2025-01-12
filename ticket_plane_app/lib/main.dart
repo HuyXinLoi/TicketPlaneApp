@@ -3,8 +3,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ticket_plane_app/base/route.dart';
+import 'package:ticket_plane_app/screen/home/bloc/home_bloc.dart';
+import 'package:ticket_plane_app/screen/home/bloc/home_event.dart';
 import 'package:ticket_plane_app/screen/login/bloc/login_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ticket_plane_app/screen/search/bloc/search_bloc.dart';
 import 'package:ticket_plane_app/screen/profile/auth_repository.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_bloc.dart';
 import 'package:ticket_plane_app/screen/profile/passenger_repository.dart';
@@ -32,6 +35,13 @@ class MainApp extends StatelessWidget {
         BlocProvider<SignupBloc>(
           create: (context) => SignupBloc(),
         ),
+        BlocProvider<HomeBloc>(
+          create: (context) => HomeBloc(),
+        ),
+        BlocProvider<SearchBloc>(
+          create: (context) => SearchBloc(),
+        ),
+        // Thêm các BLoC khác nếu cần
         BlocProvider<ProfileBloc>(
           create: (context) => ProfileBloc(
             authRepository: AuthRepository(),

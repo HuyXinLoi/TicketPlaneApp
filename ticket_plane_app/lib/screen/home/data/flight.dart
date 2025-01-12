@@ -1,47 +1,43 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Flight {
-  final int flightId;
-  final String departureCity;
-  final String arrivalCity;
-  final DateTime departureTime;
-  final DateTime arrivalTime;
-  final String airline;
-  final int price;
-  final int availableSeats;
+  final String diemDen;
+  final String diemDi;
+  final String flightId;
+  final String soGhe;
+  final String soGheTrong;
+  final String tenCB;
+  final DateTime thoiGianDen;
+  final DateTime thoiGianDi;
+  final String id;
+  final String image; // Hình ảnh chuyến bay
+  final String arrivalCityImage; // Hình ảnh điểm đến
 
-  Flight({
-    required this.flightId,
-    required this.departureCity,
-    required this.arrivalCity,
-    required this.departureTime,
-    required this.arrivalTime,
-    required this.airline,
-    required this.price,
-    required this.availableSeats,
-  });
+  Flight(
+      {required this.diemDen,
+      required this.diemDi,
+      required this.flightId,
+      required this.soGhe,
+      required this.soGheTrong,
+      required this.tenCB,
+      required this.thoiGianDen,
+      required this.thoiGianDi,
+      required this.id,
+      required this.image,
+      required this.arrivalCityImage});
 
-  factory Flight.fromJson(Map<String, dynamic> json) {
+  factory Flight.fromFirestore(Map<String, dynamic> data, String id) {
     return Flight(
-      flightId: json['flight_id'],
-      departureCity: json['departure_city'],
-      arrivalCity: json['arrival_city'],
-      departureTime: DateTime.parse(json['departure_time']),
-      arrivalTime: DateTime.parse(json['arrival_time']),
-      airline: json['airline'],
-      price: json['price'],
-      availableSeats: json['available_seats'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'flight_id': flightId,
-      'departure_city': departureCity,
-      'arrival_city': arrivalCity,
-      'departure_time': departureTime.toIso8601String(),
-      'arrival_time': arrivalTime.toIso8601String(),
-      'airline': airline,
-      'price': price,
-      'available_seats': availableSeats,
-    };
+        diemDen: data['DiemDen'] ?? '',
+        diemDi: data['DiemDi'] ?? '',
+        flightId: data['FlightId'] ?? '',
+        soGhe: data['SoGhe'] ?? '',
+        soGheTrong: data['SoGheTrong'] ?? '',
+        tenCB: data['TenCB'] ?? '',
+        thoiGianDen: (data['ThoiGianDen'] as Timestamp).toDate(),
+        thoiGianDi: (data['ThoiGianDi'] as Timestamp).toDate(),
+        id: id,
+        image: data['HinhAnhChuyenBay'] ?? '',
+        arrivalCityImage: data['HinhAnhDiemDen'] ?? '');
   }
 }
