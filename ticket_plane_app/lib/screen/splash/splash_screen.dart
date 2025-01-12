@@ -7,101 +7,80 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
   late StreamSubscription _subscription;
-  bool isDeviceConnection = false;
+  bool isDeviceConnected = false;
   bool isAlertShown = false;
-  bool isLoading = true;
+  bool shouldNavigate = false;
 
   @override
   void initState() {
     super.initState();
+    getConnectivity();
     _checkFirstTime();
-    internetConnection();
-    checkLogin();
   }
 
   Future<void> _checkFirstTime() async {
     final prefs = await SharedPreferences.getInstance();
     final isFirstTime = prefs.getBool('isFirstTime') ?? true;
 
-    if (isFirstTime) {
-      // Đánh dấu đã xem SplashScreen
-      await prefs.setBool('isFirstTime', false);
-      await Future.delayed(
-          Duration(seconds: 3)); // Hiện SplashScreen trong 3 giây
-      if (mounted) context.go('/intro');
-    } else {
-      // Nếu không phải lần đầu, chuyển thẳng đến login
-      await Future.delayed(
-          Duration(seconds: 3)); // Hiện SplashScreen trong 3 giây
-      if (mounted) context.go('/login');
-    }
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted && isDeviceConnected) {
+        if (isFirstTime) {
+          prefs.setBool('isFirstTime', false);
+          context.go('/intro');
+        } else {
+          context.go('/login');
+        }
+      } else {
+        shouldNavigate = true;
+      }
+    });
   }
 
-  void checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-
-    if (userId != null) {
-      context.go('/nav');
-    }
-  }
-
-  void internetConnection() {
+  void getConnectivity() {
     _subscription = Connectivity().onConnectivityChanged.listen((result) async {
-      isDeviceConnection = await InternetConnectionChecker().hasConnection;
-      if (!isDeviceConnection && !isAlertShown) {
+      isDeviceConnected = await InternetConnectionChecker().hasConnection;
+      if (!isDeviceConnected && !isAlertShown) {
         showDialogBox();
-      } else if (isDeviceConnection) {
-        setState(() {
-          isLoading = false;
-        });
+        setState(() => isAlertShown = true);
+      } else if (isDeviceConnected && shouldNavigate) {
+        _checkFirstTime();
       }
     });
   }
 
   void showDialogBox() {
-    setState(() {
-      isLoading = false;
-    });
     showCupertinoDialog(
       context: context,
       builder: (context) {
         return CupertinoAlertDialog(
-          title: Text('Your connection is lost'),
-          content: Text('Please check your connection'),
+          title: const Text('Mất Kết Nối - Dương DOMINIC'),
+          content: const Text('Kiểm Tra Mạng Của Bạn'),
           actions: [
             TextButton(
               onPressed: () async {
-                setState(() {
-                  isAlertShown = false;
-                  isLoading = true;
-                });
-                isDeviceConnection =
-                    await InternetConnectionChecker().hasConnection;
                 Navigator.pop(context);
-                if (isDeviceConnection) {
-                  setState(() {
-                    isLoading = false;
-                  });
-                } else {
+                setState(() => isAlertShown = false);
+                isDeviceConnected =
+                    await InternetConnectionChecker().hasConnection;
+                if (!isDeviceConnected) {
                   showDialogBox();
+                  setState(() => isAlertShown = true);
                 }
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             )
           ],
         );
       },
     );
-    setState(() {
-      isAlertShown = true;
-    });
   }
 
   @override
@@ -129,13 +108,14 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
         ),
         child: Center(
-            child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildImage('images/logo.png'),
-            CircularProgressIndicator()
-          ],
-        )),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildImage('images/logo.png'),
+              const CircularProgressIndicator(),
+            ],
+          ),
+        ),
       ),
     );
   }
