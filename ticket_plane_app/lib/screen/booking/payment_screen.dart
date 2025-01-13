@@ -8,6 +8,7 @@ import 'package:ticket_plane_app/screen/booking/bloc/booking_event.dart';
 import 'package:ticket_plane_app/screen/booking/bloc/booking_state.dart';
 import 'package:ticket_plane_app/screen/booking/data/bookingg.dart';
 import 'package:ticket_plane_app/screen/home/home_screen.dart';
+import 'package:ticket_plane_app/screen/navigationbar/bottom_navigationbar_screen.dart';
 import 'package:ticket_plane_app/screen/ticket/data/ticket.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -29,48 +30,44 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final ticketPrice = int.parse(widget.ticket.price);
     final totalPrice = ticketPrice * _numberOfPassengers;
 
-    return Scaffold(
-      // BlocListener is now inside Scaffold
-      appBar: AppBar(
-        title: const Text('Thanh toán', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF1565C0),
-      ),
-      body: BlocListener<BookingBloc, BookingState>(
-        // Correctly placed BlocListener
-        listener: (context, state) {
-          if (state.status == BookingStatus.success) {
-            // Show Flushbar
-            Flushbar(
-              message: "Thanh toán thành công!",
-              duration: const Duration(seconds: 3),
-              flushbarPosition: FlushbarPosition.TOP,
-              backgroundColor: Colors.green,
-              icon: const Icon(
-                Icons.check_circle,
-                color: Colors.white,
-              ),
-            ).show(context).then((_) {
-              // Navigate to Home screen after Flushbar disappears
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => HomeScreen()),
-                (route) => false,
-              );
-            });
-          } else if (state.status == BookingStatus.failure) {
-            Flushbar(
-              message: "Thanh toán thất bại: ${state.errorMessage}",
-              duration: const Duration(seconds: 4),
-              flushbarPosition: FlushbarPosition.TOP,
-              backgroundColor: Colors.red,
-              icon: const Icon(
-                Icons.error,
-                color: Colors.white,
-              ),
-            ).show(context);
-          }
-        },
-        child: Padding(
+    return BlocListener<BookingBloc, BookingState>(
+      // Correctly placed BlocListener outside Scaffold
+      listener: (context, state) {
+        if (state.status == BookingStatus.success) {
+          Flushbar(
+            message: "Thanh toán thành công!",
+            duration: const Duration(seconds: 3),
+            flushbarPosition: FlushbarPosition.TOP,
+            backgroundColor: Colors.green,
+            icon: const Icon(
+              Icons.check_circle,
+              color: Colors.white,
+            ),
+          ).show(context).then((_) {
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => BottomNavBar()));
+          }); // Show the Flushbar using the Scaffold context
+        } else if (state.status == BookingStatus.failure) {
+          Flushbar(
+            message: "Thanh toán thất bại: ${state.errorMessage}",
+            duration: const Duration(seconds: 4),
+            flushbarPosition: FlushbarPosition.TOP,
+            backgroundColor: Colors.red,
+            icon: const Icon(
+              Icons.error,
+              color: Colors.white,
+            ),
+          ).show(context); // Show the Flushbar using the Scaffold context
+        }
+      },
+      child: Scaffold(
+        // Scaffold is now inside BlocListener
+        appBar: AppBar(
+          title:
+              const Text('Thanh toán', style: TextStyle(color: Colors.white)),
+          backgroundColor: const Color(0xFF1565C0),
+        ),
+        body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
