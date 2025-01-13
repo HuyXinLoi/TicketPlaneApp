@@ -120,6 +120,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         'UserId': userCredential.user!.uid,
         'urlImage': userCredential.user!.photoURL,
       }, SetOptions(merge: true));
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', userCredential.user!.uid);
 
       emit(state.copyWith(status: LoginStates.success));
       event.context.go('/nav');
@@ -162,6 +164,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           'UserId': userCredential.user!.uid,
           'urlImage': userData['picture']['data']['url'],
         }, SetOptions(merge: true));
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', userCredential.user!.uid);
 
         emit(state.copyWith(status: LoginStates.success));
         event.context.go('/nav');

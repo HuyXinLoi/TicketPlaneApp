@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       state.userImageUrl!.isNotEmpty
                                   ? NetworkImage(state.userImageUrl!)
                                   : const AssetImage(
-                                          'assets/images/default_avt')
+                                          'assets/images/default_avt.png')
                                       as ImageProvider,
                             ),
                           ),
