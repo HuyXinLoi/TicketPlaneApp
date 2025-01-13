@@ -6,15 +6,20 @@ import 'package:local_auth/local_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ticket_plane_app/screen/login/login_screen.dart';
+import 'package:ticket_plane_app/screen/profile/bloc/profile_bloc.dart';
+import 'package:ticket_plane_app/screen/profile/bloc/profile_event.dart';
+import 'package:ticket_plane_app/screen/profile/bloc/profile_state.dart';
+
+import 'package:ticket_plane_app/screen/profile/passenger.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_bloc.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_event.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_state.dart';
 import 'package:ticket_plane_app/screen/profile/passenger_repository.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final String userId;
-
-  const ProfileScreen({super.key, required this.userId});
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -24,6 +29,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final String _isBiometricsEnabledKey = 'isBiometricsEnabled';
   final LocalAuthentication auth = LocalAuthentication();
   late PassengerRepository _passengerRepository;
+  String? _userId;
+  @override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+
+  // Retrieve userId from shared preferences and reload profile data
+  SharedPreferences.getInstance().then((prefs) {
+    final storedUserId = prefs.getString('userId');
+    if (storedUserId != null) {
+      _userId = storedUserId;
+
+      // Trigger the LoadProfile event if userId is available
+      context.read<ProfileBloc>().add(LoadProfile(userId: _userId!));
+    } else {
+      // Handle the case where userId is not found in shared preferences
+      print("Error: User ID not found in shared preferences.");
+      // Optionally navigate to the login screen or display an error message
+    }
+  }).catchError((error) {
+    // Handle errors when accessing shared preferences
+    print("Error accessing shared preferences: $error");
+  });
+}
+
 
   Future<bool> _authenticateWithBiometrics() async {
     try {
@@ -140,158 +169,325 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _passengerRepository = PassengerRepository();
-    context.read<ProfileBloc>().add(LoadProfile(userId: widget.userId));
+    _loadUserId();
   }
 
-  @override
-  void didUpdateWidget(covariant ProfileScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.userId != oldWidget.userId) {
-      context.read<ProfileBloc>().add(LoadProfile(userId: widget.userId));
+  Future<void> _loadUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userId = prefs.getString('userId');
+    });
+    if (_userId != null) {
+      context.read<ProfileBloc>().add(LoadProfile(userId: _userId!));
     }
   }
+
+  // @override
+  // void didUpdateWidget(covariant ProfileScreen oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  // }
+
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   context.read<ProfileBloc>().add(LoadUserProfile());
+  // }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<ProfileBloc, ProfileState>(
-      listener: (context, state) {
-        if (state is ProfileLoggedOut) {
-          if (mounted) {
-            context.go('/login');
+        listener: (context, state) {
+          if (state is ProfileLoggedOut) {
+            if (mounted) {
+              context.go('/login');
+            }
+          } else if (state is ProfileChangePasswordSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Đổi mật khẩu thành công!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else if (state is ProfileChangePasswordFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
-        }
-      },
-      child: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF0D47A1),
-                Color(0xFF1976D2),
-              ],
+        },
+        child: Scaffold(
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF0D47A1),
+                  Color(0xFF1976D2),
+                ],
+              ),
             ),
-          ),
-          child: SafeArea(
-            child: BlocBuilder<ProfileBloc, ProfileState>(
-              builder: (context, state) {
-                if (state is ProfileLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is ProfileError) {
-                  return Center(child: Text('Error: ${state.message}'));
-                } else if (state is ProfileLoaded) {
-                  final combinedUserData = state.userData;
+            child: SafeArea(
+              child: BlocBuilder<ProfileBloc, ProfileState>(
+                builder: (context, state) {
+                  if (state is ProfileLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is ProfileError) {
+                    return Center(child: Text('Error: ${state.message}'));
+                  } else if (state is ProfileLoaded) {
+                    final combinedUserData = state.userData;
 
-                  return SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 20),
-                          Center(
-                            child: CircleAvatar(
-                              radius: 60,
-                              backgroundImage: NetworkImage(
-                                combinedUserData['urlImage'] ??
-                                    'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1287&q=80',
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Center(
-                            child: Text(
-                              combinedUserData['name'] ?? 'N/A',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          const Text(
-                            'Thông tin cá nhân',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          _buildUserInfoItem(Icons.email, 'Email',
-                              combinedUserData['email'] ?? 'N/A'),
-                          _buildUserInfoItem(Icons.phone, 'Số điện thoại',
-                              combinedUserData['phoneNumber'] ?? 'N/A'),
-                          _buildUserInfoItem(Icons.location_on, 'Địa chỉ',
-                              combinedUserData['address'] ?? 'N/A'),
-                          _buildUserInfoItem(Icons.card_membership, 'Passport',
-                              combinedUserData['passport'] ?? 'N/A'),
-                          _buildUserInfoItem(
-                              Icons.cake,
-                              'Ngày sinh',
-                              (combinedUserData['dateOfBirth'] as Timestamp?)
-                                      ?.toDate()
-                                      .toString()
-                                      .substring(0, 10) ??
-                                  'N/A'),
-                          const SizedBox(height: 30),
-                          Center(
-                            child: ElevatedButton(
-                              onPressed: () => _showBiometricsScreen(context),
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 15, horizontal: 60),
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                              ),
-                              child: const Text(
-                                'Sinh trắc học',
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Spacer(), // Căn giữa tiêu đề
+                              const Text(
+                                'Profile',
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  color: Colors.white,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ),
+                              const Spacer(), // Căn giữa tiêu đề
+                            ],
                           ),
-                          const SizedBox(height: 20),
-                          Center(
-                            child: ElevatedButton(
-                              onPressed: _logout,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 15, horizontal: 100),
-                                backgroundColor: Colors.redAccent,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
+                        ),
+
+                        // Profile Picture and Name
+                        Center(
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 60,
+                                backgroundImage: NetworkImage(combinedUserData
+                                            .containsKey('urlImage') &&
+                                        combinedUserData['urlImage'] != null
+                                    ? combinedUserData['urlImage']
+                                    : 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1287&q=80'),
                               ),
-                              child: const Text(
-                                'Đăng xuất',
-                                style: TextStyle(
-                                  fontSize: 18,
+                              const SizedBox(height: 10),
+                              Text(
+                                combinedUserData.containsKey('name')
+                                    ? combinedUserData['name'] as String
+                                    : 'N/A',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+                            ],
+                          ),
+                        ),
+
+                        // Body Content
+                        Expanded(
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(30),
+                                topRight: Radius.circular(30),
+                              ),
+                            ),
+                            child: SingleChildScrollView(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 20),
+
+                                    // Personal Information
+                                    const Text(
+                                      'Thông tin cá nhân',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    _buildUserInfoItem(
+                                      Icons.email,
+                                      'Email',
+                                      combinedUserData.containsKey('email')
+                                          ? combinedUserData['email']
+                                          : 'N/A',
+                                    ),
+                                    _buildUserInfoItem(
+                                      Icons.phone,
+                                      'Số điện thoại',
+                                      combinedUserData
+                                              .containsKey('phoneNumber')
+                                          ? combinedUserData['phoneNumber']
+                                          : 'N/A',
+                                    ),
+                                    _buildUserInfoItem(
+                                      Icons.location_on,
+                                      'Địa chỉ',
+                                      combinedUserData.containsKey('address')
+                                          ? combinedUserData['address']
+                                          : 'N/A',
+                                    ),
+                                    _buildUserInfoItem(
+                                      Icons.card_membership,
+                                      'Passport',
+                                      combinedUserData.containsKey('passport')
+                                          ? combinedUserData['passport']
+                                          : 'N/A',
+                                    ),
+                                    _buildUserInfoItem(
+                                      Icons.cake,
+                                      'Ngày sinh',
+                                      combinedUserData
+                                              .containsKey('dateOfBirth')
+                                          ? (combinedUserData['dateOfBirth']
+                                                  as Timestamp)
+                                              .toDate()
+                                              .toString()
+                                              .substring(0, 10)
+                                          : 'N/A',
+                                    ),
+                                    _buildUserInfoItem(
+                                      Icons.person,
+                                      'Giới tính',
+                                      combinedUserData.containsKey('gender')
+                                          ? combinedUserData['gender']
+                                          : 'N/A',
+                                    ),
+
+                                    const SizedBox(height: 30),
+
+                                    // Change Password Button
+                                    Center(
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          // context.read<ProfileBloc>().add(
+                                          //     ResetProfileState()); // Reset state
+                                          context.pushNamed('change_password');
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 15, horizontal: 100),
+                                          backgroundColor: Colors.blueAccent,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Đổi mật khẩu',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Center(
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          context.pushNamed('update_profile');
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 15, horizontal: 100),
+                                          backgroundColor: Colors.orangeAccent,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Cập Nhật Thông Tin',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 30),
+                                    Center(
+                                      child: ElevatedButton(
+                                        onPressed: () =>
+                                            _showBiometricsScreen(context),
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 15, horizontal: 60),
+                                          backgroundColor: Colors.green,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Sinh trắc học',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 30),
+                                    // Logout Button
+                                    Center(
+                                      child: ElevatedButton(
+                                        onPressed: () => context
+                                            .read<ProfileBloc>()
+                                            .add(LogoutButtonPressed()),
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 15, horizontal: 100),
+                                          backgroundColor: Colors.redAccent,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Đăng xuất',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  );
-                } else {
-                  return Container();
-                }
-              },
+                        ),
+                      ],
+                    );
+                  } else if (state is ProfileInitial) {
+                    return const Center(child: Text("User not logged in."));
+                  } else {
+                    return Container(); // Or provide a default widget
+                  }
+                },
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   Widget _buildUserInfoItem(IconData icon, String title, String value) {
@@ -324,4 +520,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+
+  
 }
