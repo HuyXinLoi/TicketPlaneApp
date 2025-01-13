@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -61,6 +62,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       );
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('userId', userCredential.user!.uid);
+      await Future.delayed(const Duration(seconds: 2));
       emit(state.copyWith(status: LoginStates.success));
     } on FirebaseAuthException catch (e) {
       String errorMessage =

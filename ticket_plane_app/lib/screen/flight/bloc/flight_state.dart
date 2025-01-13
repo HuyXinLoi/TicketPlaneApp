@@ -1,10 +1,30 @@
 part of 'flight_bloc.dart';
 
-sealed class FlightState extends Equatable {
-  const FlightState();
-  
-  @override
-  List<Object> get props => [];
-}
+enum FlightStatus { initial, loading, success, failure }
 
-final class FlightInitial extends FlightState {}
+class FlightState extends Equatable {
+  final FlightStatus status;
+  final Flight? flight;
+  final String? errorMessage;
+
+  const FlightState({
+    this.status = FlightStatus.initial,
+    this.flight,
+    this.errorMessage,
+  });
+
+  FlightState copyWith({
+    FlightStatus? status,
+    Flight? flight,
+    String? errorMessage,
+  }) {
+    return FlightState(
+      status: status ?? this.status,
+      flight: flight ?? this.flight,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
+
+  @override
+  List<Object?> get props => [status, flight, errorMessage];
+}

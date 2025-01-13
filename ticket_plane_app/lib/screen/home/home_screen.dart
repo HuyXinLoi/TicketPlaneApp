@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/screen/destination/destination_screen.dart';
+import 'package:ticket_plane_app/screen/flight/flight_screen.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_bloc.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_event.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_state.dart';
@@ -92,8 +93,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               radius: 25,
                               backgroundImage: state.userImageUrl != null
                                   ? NetworkImage('${state.userImageUrl!}')
-                                  : NetworkImage(
-                                      'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
+                                  : const AssetImage(
+                                          'images/default_avatar.png')
+                                      as ImageProvider,
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -355,54 +357,65 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFlightItem(Flight flight) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEEEEEE),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Hình ảnh chuyến bay
-          Image.network(
-            flight.image,
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return const Icon(Icons.error); // Placeholder khi lỗi
-            },
-          ),
-          const SizedBox(width: 10), // Khoảng cách giữa hình ảnh và thông tin
-          Expanded(
-            // Sử dụng Expanded để tránh tràn
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${flight.diemDi} - ${flight.diemDen} ',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis, // Xử lý tràn chữ
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${flight.thoiGianDi.day}/${flight.thoiGianDi.month}/${flight.thoiGianDi.year}',
-                ),
-              ],
+    return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FlightScreen(flightId: flight.flightId),
             ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEEEEEE),
+            borderRadius: BorderRadius.circular(10),
           ),
-          const SizedBox(width: 10), // Khoảng cách giữa thông tin và hãng bay
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(flight.tenCB),
-              const SizedBox(height: 4),
+              // Hình ảnh chuyến bay
+              Image.network(
+                flight.image,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.error); // Placeholder khi lỗi
+                },
+              ),
+              const SizedBox(
+                  width: 10), // Khoảng cách giữa hình ảnh và thông tin
+              Expanded(
+                // Sử dụng Expanded để tránh tràn
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${flight.diemDi} - ${flight.diemDen} ',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis, // Xử lý tràn chữ
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${flight.thoiGianDi.day}/${flight.thoiGianDi.month}/${flight.thoiGianDi.year}',
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                  width: 10), // Khoảng cách giữa thông tin và hãng bay
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(flight.tenCB),
+                  const SizedBox(height: 4),
+                ],
+              ),
             ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 
   Widget _buildDestinationCard(String title, String imageUrl) {
