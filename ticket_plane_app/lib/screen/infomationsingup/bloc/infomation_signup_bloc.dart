@@ -22,6 +22,7 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
     on<UserInfoPassportChanged>(_onPassportChanged);
     on<UserInfoDateOfBirthChanged>(_onDateOfBirthChanged);
     on<UserInfoSubmitted>(_onSubmitted);
+    on<UserInfoLogOut>(_onLogOut);
   }
   void _onNameChanged(UserInfoNameChanged event, Emitter<UserInfoState> emit) {
     emit(state.copyWith(name: event.name, status: UserInfoStatus.initial));
@@ -111,11 +112,16 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
           email: email);
       await _userInfoRepository.saveUserInfo(userInfo, userId);
       emit(state.copyWith(status: UserInfoStatus.success));
+      await Future.delayed(Duration(seconds: 3));
     } catch (e) {
       emit(state.copyWith(
         status: UserInfoStatus.failure,
         errorMessage: e.toString(),
       ));
     }
+  }
+
+  void _onLogOut(UserInfoLogOut event, Emitter<UserInfoState> emit) {
+    emit(state.copyWith(status: UserInfoStatus.initial));
   }
 }

@@ -64,3 +64,5 @@ class SignupConfirmPasswordValidationChanged extends SignupEvent {
 }
 
 class SignupSubmitted extends SignupEvent {}
+
+class LogOutSignUp extends SignupEvent {}

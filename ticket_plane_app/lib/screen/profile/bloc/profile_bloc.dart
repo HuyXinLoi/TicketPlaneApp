@@ -28,7 +28,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       print("ProfileBloc - LogoutButtonPressed received");
       await _authRepository.signOut();
       final prefs = await SharedPreferences.getInstance();
+      final userId = await prefs.getString('userId');
+      await prefs.setString('biologic', userId!);
       await prefs.remove('userId');
+
       _cachedUserData = null;
       print("ProfileBloc - Emitting ProfileLoggedOut");
       emit(ProfileLoggedOut());

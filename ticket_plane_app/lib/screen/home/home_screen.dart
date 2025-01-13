@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/screen/destination/destination_screen.dart';
+import 'package:ticket_plane_app/screen/flight/flight_screen.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_bloc.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_event.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_state.dart';
@@ -90,10 +91,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             onTap: () {},
                             child: CircleAvatar(
                               radius: 25,
-                              backgroundImage: state.userImageUrl != null
-                                  ? NetworkImage('${state.userImageUrl!}')
-                                  : NetworkImage(
-                                      'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
+                              backgroundImage: state.userImageUrl != null &&
+                                      state.userImageUrl!.isNotEmpty
+                                  ? NetworkImage(state.userImageUrl!)
+                                  : const AssetImage(
+                                          'assets/images/default_avt')
+                                      as ImageProvider,
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -312,22 +315,152 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDestinationBanner(
       String destination, String imageUrl, String promo) {
     return Container(
-        width: 250,
+      width: 250,
+      margin: const EdgeInsets.only(right: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        image: DecorationImage(
+          image: imageUrl.isNotEmpty
+              ? NetworkImage(imageUrl)
+              : const AssetImage('assets/images/default_image.jpg')
+                  as ImageProvider,
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                destination,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              Text(
+                promo,
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFlightItem(Flight flight) {
+    return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FlightScreen(flightId: flight.flightId),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEEEEEE),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Hình ảnh chuyến bay
+              Image.network(
+                flight.image,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.error); // Placeholder khi lỗi
+                },
+              ),
+              const SizedBox(
+                  width: 10), // Khoảng cách giữa hình ảnh và thông tin
+              Expanded(
+                // Sử dụng Expanded để tránh tràn
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${flight.diemDi} - ${flight.diemDen} ',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis, // Xử lý tràn chữ
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${flight.thoiGianDi.day}/${flight.thoiGianDi.month}/${flight.thoiGianDi.year}',
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                  width: 10), // Khoảng cách giữa thông tin và hãng bay
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(flight.tenCB),
+                  const SizedBox(height: 4),
+                ],
+              ),
+            ],
+          ),
+        ));
+  }
+
+  Widget _buildDestinationCard(String title, String imageUrl) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DestinationScreen(
+              destination: title,
+              flights: context.read<HomeBloc>().state.flights,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 200,
+        height: 150,
         margin: const EdgeInsets.only(right: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           image: DecorationImage(
-            image: NetworkImage(imageUrl),
+            image: imageUrl.isNotEmpty
+                ? NetworkImage(imageUrl)
+                : const AssetImage('assets/images/default_image.jpg')
+                    as ImageProvider,
             fit: BoxFit.cover,
           ),
         ),
         child: Container(
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Colors.black.withOpacity(0.6), Colors.transparent])),
+            borderRadius: BorderRadius.circular(10),
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+            ),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -335,127 +468,18 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  destination,
+                  title,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),
                 ),
-                Text(
-                  promo,
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
               ],
             ),
           ),
-        ));
-  }
-
-  Widget _buildFlightItem(Flight flight) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEEEEEE),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Hình ảnh chuyến bay
-          Image.network(
-            flight.image,
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return const Icon(Icons.error); // Placeholder khi lỗi
-            },
-          ),
-          const SizedBox(width: 10), // Khoảng cách giữa hình ảnh và thông tin
-          Expanded(
-            // Sử dụng Expanded để tránh tràn
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${flight.diemDi} - ${flight.diemDen} ',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis, // Xử lý tràn chữ
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${flight.thoiGianDi.day}/${flight.thoiGianDi.month}/${flight.thoiGianDi.year}',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10), // Khoảng cách giữa thông tin và hãng bay
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(flight.tenCB),
-              const SizedBox(height: 4),
-            ],
-          ),
-        ],
+        ),
       ),
     );
-  }
-
-  Widget _buildDestinationCard(String title, String imageUrl) {
-    return GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DestinationScreen(
-                destination: title,
-                flights: context.read<HomeBloc>().state.flights,
-              ),
-            ),
-          );
-        },
-        child: Container(
-          width: 200,
-          height: 150,
-          margin: const EdgeInsets.only(right: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            image: DecorationImage(
-              image: NetworkImage(imageUrl),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [Colors.black.withOpacity(0.6), Colors.transparent],
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ));
   }
 }

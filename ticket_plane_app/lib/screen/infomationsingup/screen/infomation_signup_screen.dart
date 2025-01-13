@@ -40,14 +40,21 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
         child: BlocListener<UserInfoBloc, UserInfoState>(
           listener: (context, state) {
             if (state.status == UserInfoStatus.success) {
-              context.go('/nav');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Đăng Ký Thành Công!',
-                      style: TextStyle(color: Colors.black)),
-                  backgroundColor: Colors.greenAccent,
+              Flushbar(
+                message: 'Đăng Ký Thành Công!',
+                margin: const EdgeInsets.all(8),
+                borderRadius: BorderRadius.circular(8),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 3),
+                flushbarPosition: FlushbarPosition.TOP,
+                icon: const Icon(
+                  Icons.error,
+                  size: 28,
+                  color: Colors.white,
                 ),
-              );
+              ).show(context).then((_) {
+                context.go('/nav');
+              });
             } else if (state.status == UserInfoStatus.failure) {
               Flushbar(
                 message: state.errorMessage,
@@ -389,7 +396,8 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
               borderRadius: BorderRadius.circular(30),
             ),
           ),
-          child: state.status == UserInfoStatus.loading
+          child: state.status == UserInfoStatus.loading ||
+                  state.status == UserInfoStatus.success
               ? const CircularProgressIndicator()
               : const Text(
                   'Đăng Ký',
