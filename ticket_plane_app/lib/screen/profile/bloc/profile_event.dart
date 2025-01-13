@@ -37,8 +37,6 @@ class ResetProfileState extends ProfileEvent {}
 
 // class LoadUserProfile extends ProfileEvent {}
 
-
-// Thêm event ShowSnackBar
 class ShowSnackBar extends ProfileEvent {
   final String message;
   final bool isError; // true nếu là lỗi, false nếu là thông báo thành công
@@ -47,4 +45,40 @@ class ShowSnackBar extends ProfileEvent {
 
   @override
   List<Object> get props => [message, isError];
+}
+
+class UpdateProfilePicture extends ProfileEvent {
+  final String imagePath; // Could be a file path or a URL
+
+  const UpdateProfilePicture({required this.imagePath});
+
+  @override
+  List<Object> get props => [imagePath];
+}
+
+class UpdatePhoneNumber extends ProfileEvent {
+  final String phoneNumber;
+
+  const UpdatePhoneNumber({required this.phoneNumber});
+
+  @override
+  List<Object> get props => [phoneNumber];
+}
+
+class UpdateAddress extends ProfileEvent {
+  final String address;
+
+  const UpdateAddress({required this.address});
+
+  @override
+  List<Object> get props => [address];
+}
+
+class UpdateDateOfBirth extends ProfileEvent {
+  final DateTime dateOfBirth;
+
+  const UpdateDateOfBirth({required this.dateOfBirth});
+
+  @override
+  List<Object> get props => [dateOfBirth];
 }

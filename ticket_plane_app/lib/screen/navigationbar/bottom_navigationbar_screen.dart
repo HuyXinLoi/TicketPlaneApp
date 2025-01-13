@@ -23,11 +23,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
   ];
 
   //change our index for BottomNavBar
-    SearchScreen(),
-    const Center(child: Text("Tickets")),
-    //const ProfileScreen(),
-    ProfileScreen(userId: 'yYDbC2VA6sd57YIxlxsNUVM0BnO2'),
-  ];
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {

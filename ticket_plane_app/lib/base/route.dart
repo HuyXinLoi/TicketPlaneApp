@@ -11,6 +11,7 @@ import 'package:ticket_plane_app/screen/login/login_facebook.dart';
 import 'package:ticket_plane_app/screen/login/login_screen.dart';
 import 'package:ticket_plane_app/screen/navigationbar/bottom_navigationbar_screen.dart';
 import 'package:ticket_plane_app/screen/profile/ChangePasswordScreen';
+import 'package:ticket_plane_app/screen/profile/UpdateProfileScreen';
 import 'package:ticket_plane_app/screen/profile/auth_repository.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_bloc.dart';
 import 'package:ticket_plane_app/screen/profile/passenger_repository.dart';
@@ -70,6 +71,11 @@ class AppRouter {
         path: '/forgot-password',
         name: 'forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        name: 'update_profile',
+        path: '/update_profile',
+        builder: (context, state) => const UpdateProfileScreen(),
       ),
     ],
   );

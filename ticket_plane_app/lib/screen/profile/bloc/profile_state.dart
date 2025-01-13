@@ -34,7 +34,7 @@ class ProfileError extends ProfileState {
 class ProfileLoggedOut extends ProfileState {}
 
 class ProfileChangePasswordLoading extends ProfileState {}
-
+class ProfileUpdateLoading extends ProfileState {}
 class ProfileChangePasswordSuccess extends ProfileState {}
 // class ProfileFailure extends ProfileState {
 //   final String message;
@@ -47,8 +47,20 @@ class ProfileChangePasswordSuccess extends ProfileState {}
 class ProfileChangePasswordFailure extends ProfileState {
   final String message;
 
-  const ProfileChangePasswordFailure({required this.message, Function(String, bool)? onPasswordChanged}) : super(onPasswordChanged: onPasswordChanged);
+  const ProfileChangePasswordFailure({required this.message});
 
   @override
   List<Object?> get props => [message];
+}
+
+class ProfileUpdateError extends ProfileState {
+  final String message;
+
+  const ProfileUpdateError({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+class ProfileIncorrectOldPassword extends ProfileState {
+  const ProfileIncorrectOldPassword();
 }
