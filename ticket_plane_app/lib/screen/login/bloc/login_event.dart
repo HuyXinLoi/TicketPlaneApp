@@ -61,3 +61,5 @@ class LoginPasswordValidationChanged extends LoginEvent {
   @override
   List<Object> get props => [password];
 }
+
+class LogOut extends LoginEvent {}

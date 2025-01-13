@@ -19,6 +19,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     on<SignupConfirmPasswordValidationChanged>(
         _onConfirmPasswordValidationChanged);
     on<SignupSubmitted>(_onSubmitted);
+    on<LogOutSignUp>(_onLogOut);
   }
 
   void _onEmailChanged(SignupEmailChanged event, Emitter<SignupState> emit) {
@@ -117,6 +118,10 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
         emit(state.copyWith(status: SignupStatus.failure));
       }
     }
+  }
+
+  void _onLogOut(LogOutSignUp event, Emitter<SignupState> emit) {
+    emit(state.copyWith(status: SignupStatus.initial));
   }
 
   bool _validateEmail(String email) {

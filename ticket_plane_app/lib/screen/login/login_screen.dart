@@ -70,6 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (authenticated) {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('biologic');
+      await prefs.setString('userId', userId!);
       context.go('/nav');
     } else {
       Flushbar(
@@ -193,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       children: [
         Text(
-          _username.isNotEmpty ? 'Chào Mừng, $_username!' : 'Xin Chào!',
+          _username.isNotEmpty ? 'Welcome Back, $_username!' : 'Xin Chào!',
           style: const TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,

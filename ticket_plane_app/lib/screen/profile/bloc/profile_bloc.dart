@@ -28,7 +28,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       print("ProfileBloc - LogoutButtonPressed received");
       await _authRepository.signOut();
       final prefs = await SharedPreferences.getInstance();
+      final userId = await prefs.getString('userId');
+      await prefs.setString('biologic', userId!);
       await prefs.remove('userId');
+
       _cachedUserData = null;
       print("ProfileBloc - Emitting ProfileLoggedOut");
       emit(ProfileLoggedOut());
@@ -74,62 +77,62 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     });
 
     on<ChangePasswordPressed>((event, emit) async {
-  print("ProfileBloc - ChangePasswordPressed received");
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    emit(ProfileChangePasswordLoading());
-  });
+      print("ProfileBloc - ChangePasswordPressed received");
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        emit(ProfileChangePasswordLoading());
+      });
 
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final userId = prefs.getString('userId');
 
-    if (userId == null || userId.isEmpty) {
-      emit(const ProfileChangePasswordFailure(message: 'User not logged in.'));
-      return;
-    }
+        if (userId == null || userId.isEmpty) {
+          emit(const ProfileChangePasswordFailure(
+              message: 'User not logged in.'));
+          return;
+        }
 
-    final userData = await _passengerRepository.getUserData(userId);
-    final userEmail = userData?['email'];
+        final userData = await _passengerRepository.getUserData(userId);
+        final userEmail = userData?['email'];
 
-    if (userEmail == null || userEmail.isEmpty) {
-      emit(const ProfileChangePasswordFailure(message: 'Email not found.'));
-      return;
-    }
+        if (userEmail == null || userEmail.isEmpty) {
+          emit(const ProfileChangePasswordFailure(message: 'Email not found.'));
+          return;
+        }
 
-    AuthCredential credential = EmailAuthProvider.credential(
-        email: userEmail, password: event.oldPassword);
+        AuthCredential credential = EmailAuthProvider.credential(
+            email: userEmail, password: event.oldPassword);
 
-    await FirebaseAuth.instance.currentUser!
-        .reauthenticateWithCredential(credential);
+        await FirebaseAuth.instance.currentUser!
+            .reauthenticateWithCredential(credential);
 
-    if (event.newPassword.length < 6) {
-      emit(const ProfileChangePasswordFailure(
-          message: 'New password must be at least 6 characters.'));
-      return;
-    }
+        if (event.newPassword.length < 6) {
+          emit(const ProfileChangePasswordFailure(
+              message: 'New password must be at least 6 characters.'));
+          return;
+        }
 
-    if (event.newPassword != event.confirmNewPassword) {
-      emit(const ProfileChangePasswordFailure(
-          message: 'New passwords do not match.'));
-      return;
-    }
+        if (event.newPassword != event.confirmNewPassword) {
+          emit(const ProfileChangePasswordFailure(
+              message: 'New passwords do not match.'));
+          return;
+        }
 
-    await FirebaseAuth.instance.currentUser!
-        .updatePassword(event.newPassword);
+        await FirebaseAuth.instance.currentUser!
+            .updatePassword(event.newPassword);
 
-    emit(ProfileChangePasswordSuccess());
-  } on FirebaseAuthException catch (e) {
-    if (e.code == 'wrong-password') {
-      emit(const ProfileIncorrectOldPassword());
-    } else {
-      emit(ProfileChangePasswordFailure(
-          message: 'Mật khẩu cũ không khớp!: ${e.message}'));
-    }
-  } catch (e) {
-    emit(ProfileChangePasswordFailure(message: 'Unexpected error: $e'));
-  }
-});
-
+        emit(ProfileChangePasswordSuccess());
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'wrong-password') {
+          emit(const ProfileIncorrectOldPassword());
+        } else {
+          emit(ProfileChangePasswordFailure(
+              message: 'Mật khẩu cũ không khớp!: ${e.message}'));
+        }
+      } catch (e) {
+        emit(ProfileChangePasswordFailure(message: 'Unexpected error: $e'));
+      }
+    });
 
     on<ShowSnackBar>((event, emit) {
       print("ProfileBloc - ShowSnackBar event received (no state change)");

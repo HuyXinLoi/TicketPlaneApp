@@ -22,6 +22,7 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
     on<UserInfoPassportChanged>(_onPassportChanged);
     on<UserInfoDateOfBirthChanged>(_onDateOfBirthChanged);
     on<UserInfoSubmitted>(_onSubmitted);
+    on<UserInfoLogOut>(_onLogOut);
   }
   void _onNameChanged(UserInfoNameChanged event, Emitter<UserInfoState> emit) {
     emit(state.copyWith(name: event.name, status: UserInfoStatus.initial));
@@ -118,5 +119,9 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
         errorMessage: e.toString(),
       ));
     }
+  }
+
+  void _onLogOut(UserInfoLogOut event, Emitter<UserInfoState> emit) {
+    emit(state.copyWith(status: UserInfoStatus.initial));
   }
 }
