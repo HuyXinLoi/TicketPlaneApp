@@ -4,7 +4,7 @@ abstract class ProfileEvent extends Equatable {
   const ProfileEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => []; // Use List<Object?> instead of List<Object>
 }
 
 class LogoutButtonPressed extends ProfileEvent {}
@@ -35,11 +35,9 @@ class ChangePasswordPressed extends ProfileEvent {
 
 class ResetProfileState extends ProfileEvent {}
 
-// class LoadUserProfile extends ProfileEvent {}
-
 class ShowSnackBar extends ProfileEvent {
   final String message;
-  final bool isError; // true nếu là lỗi, false nếu là thông báo thành công
+  final bool isError; // true if error, false if success
 
   const ShowSnackBar({required this.message, this.isError = false});
 
@@ -47,38 +45,41 @@ class ShowSnackBar extends ProfileEvent {
   List<Object> get props => [message, isError];
 }
 
-class UpdateProfilePicture extends ProfileEvent {
-  final String imagePath; // Could be a file path or a URL
+// Note: UpdateProfilePicture is removed as we are now handling image updates via URL
+// If you still need to handle local file uploads, you can re-add it.
 
-  const UpdateProfilePicture({required this.imagePath});
+class ChangeAvatar extends ProfileEvent {
+  final String newAvatarUrl;
+
+  const ChangeAvatar({required this.newAvatarUrl});
 
   @override
-  List<Object> get props => [imagePath];
+  List<Object> get props => [newAvatarUrl];
 }
 
-class UpdatePhoneNumber extends ProfileEvent {
-  final String phoneNumber;
-
-  const UpdatePhoneNumber({required this.phoneNumber});
-
-  @override
-  List<Object> get props => [phoneNumber];
+class ClearProfileCache extends ProfileEvent {
+  const ClearProfileCache();
 }
 
-class UpdateAddress extends ProfileEvent {
-  final String address;
+class UpdateProfile extends ProfileEvent {
+  final String? phoneNumber;
+  final String? address;
+  final DateTime? dateOfBirth;
+  final String? name;
+  final String? passport;
+  final String? gender;
+  final String? imageUrl; // Add imageUrl
 
-  const UpdateAddress({required this.address});
+  const UpdateProfile({
+    this.phoneNumber,
+    this.address,
+    this.dateOfBirth,
+    this.name,
+    this.passport,
+    this.gender,
+    this.imageUrl, // Add imageUrl
+  });
 
   @override
-  List<Object> get props => [address];
-}
-
-class UpdateDateOfBirth extends ProfileEvent {
-  final DateTime dateOfBirth;
-
-  const UpdateDateOfBirth({required this.dateOfBirth});
-
-  @override
-  List<Object> get props => [dateOfBirth];
+  List<Object?> get props => [phoneNumber, address, dateOfBirth, name, passport, gender, imageUrl]; // Add imageUrl
 }

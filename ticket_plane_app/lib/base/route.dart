@@ -10,7 +10,7 @@ import 'package:ticket_plane_app/screen/login/data/login_gg.dart';
 import 'package:ticket_plane_app/screen/login/login_facebook.dart';
 import 'package:ticket_plane_app/screen/login/login_screen.dart';
 import 'package:ticket_plane_app/screen/navigationbar/bottom_navigationbar_screen.dart';
-import 'package:ticket_plane_app/screen/profile/ChangePasswordScreen.darrt';
+import 'package:ticket_plane_app/screen/profile/ChangePasswordScreen.dart';
 import 'package:ticket_plane_app/screen/profile/UpdateProfileScreen.dart';
 import 'package:ticket_plane_app/screen/profile/auth_repository.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_bloc.dart';

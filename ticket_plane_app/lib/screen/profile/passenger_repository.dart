@@ -8,7 +8,7 @@ class PassengerRepository {
 
   Future<Passenger> getUserById(String userId) async {
     try {
-       print("PassengerRepository - Fetching data from collection: users"); 
+      print("PassengerRepository - Fetching data from collection: users");
       DocumentSnapshot userDoc =
           await _db.collection('passengers').doc(userId).get();
       if (userDoc.exists) {
@@ -23,25 +23,26 @@ class PassengerRepository {
   }
 
   Future<Map<String, dynamic>?> getUserData(String userId) async {
-  try {
-    print("PassengerRepository - Fetching data for userId: $userId");
-    DocumentSnapshot userDoc =
-        await _db.collection('users').doc(userId).get(); 
-    print("PassengerRepository - DocumentSnapshot: ${userDoc.data()}"); // Print the data
+    try {
+      print("PassengerRepository - Fetching data for userId: $userId");
+      DocumentSnapshot userDoc =
+          await _db.collection('users').doc(userId).get();
+      print(
+          "PassengerRepository - DocumentSnapshot: ${userDoc.data()}"); // Print the data
 
-    if (userDoc.exists) {
-      final data = userDoc.data() as Map<String, dynamic>?;
-      print("PassengerRepository - Returning data: $data");
-      return data;
-    } else {
-      print("PassengerRepository - User data not found for userId: $userId");
-      return null;
+      if (userDoc.exists) {
+        final data = userDoc.data() as Map<String, dynamic>?;
+        print("PassengerRepository - Returning data: $data");
+        return data;
+      } else {
+        print("PassengerRepository - User data not found for userId: $userId");
+        return null;
+      }
+    } catch (e) {
+      print("PassengerRepository - Failed to get user data: $e");
+      throw e;
     }
-  } catch (e) {
-    print("PassengerRepository - Failed to get user data: $e");
-    throw e;
   }
-}
 
   Future<void> updateUser(String userId, Map<String, dynamic> data) async {
     try {
@@ -58,6 +59,25 @@ class PassengerRepository {
     } catch (e) {
       print("Failed to update user: $e");
       throw e;
+    }
+  }
+
+  Future<void> updatePassengerAvatar(
+      String userId, String newAvatarUrl) async {
+    try {
+      print(
+          "PassengerRepository: updatePassengerAvatar called with userId: $userId, newAvatarUrl: $newAvatarUrl"); // Add this line
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update({'urlImage': newAvatarUrl});
+
+      print("PassengerRepository: Firestore update successful"); // Add this line
+    } catch (e) {
+      print(
+          "PassengerRepository: Error updating avatar: ${e.toString()}"); // Add this line
+      throw Exception('Failed to update avatar: ${e.toString()}');
     }
   }
 }

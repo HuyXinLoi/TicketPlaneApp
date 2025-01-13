@@ -38,11 +38,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             _isLoading = false;
           });
 
-          _oldPasswordController.clear();
-          _newPasswordController.clear();
-          _confirmNewPasswordController.clear();
-          context.read<ProfileBloc>().add(LogoutButtonPressed());
-          context.go('/login');
+          // Hiển thị dialog thay vì snackbar
+          _showSuccessDialog(context);
+
         } else if (state is ProfileChangePasswordFailure) {
           setState(() {
             _isLoading = false;
@@ -85,8 +83,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   hintText: 'Mật khẩu cũ',
                   suffixIcon: IconButton(
                     icon: Icon(_obscureOldPassword
-                        ? Icons.visibility
-                        : Icons.visibility_off),
+                        ? Icons.visibility_off
+                        : Icons.visibility),
                     onPressed: () {
                       setState(() {
                         _obscureOldPassword = !_obscureOldPassword;
@@ -104,8 +102,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   hintText: 'Mật khẩu mới',
                   suffixIcon: IconButton(
                     icon: Icon(_obscureNewPassword
-                        ? Icons.visibility
-                        : Icons.visibility_off),
+                        ? Icons.visibility_off
+                        : Icons.visibility),
                     onPressed: () {
                       setState(() {
                         _obscureNewPassword = !_obscureNewPassword;
@@ -123,8 +121,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   hintText: 'Xác nhận mật khẩu mới',
                   suffixIcon: IconButton(
                     icon: Icon(_obscureConfirmPassword
-                        ? Icons.visibility
-                        : Icons.visibility_off),
+                        ? Icons.visibility_off
+                        : Icons.visibility),
                     onPressed: () {
                       setState(() {
                         _obscureConfirmPassword = !_obscureConfirmPassword;
@@ -155,6 +153,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           return;
                         }
 
+                        if (newPassword != confirmNewPassword) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Mật khẩu mới và mật khẩu xác nhận không trùng khớp.'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+
                         context.read<ProfileBloc>().add(
                               ChangePasswordPressed(
                                 oldPassword: oldPassword,
@@ -176,6 +184,35 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  // Hàm hiển thị dialog thông báo
+  void _showSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Không cho dismiss dialog khi nhấn bên ngoài
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Thành công"),
+          content: const Text("Đổi mật khẩu thành công. Vui lòng đăng nhập lại."),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("Đăng nhập lại"),
+              onPressed: () {
+                // Đăng xuất
+                context.read<ProfileBloc>().add(LogoutButtonPressed());
+                // Xóa text trong các controller
+                _oldPasswordController.clear();
+                _newPasswordController.clear();
+                _confirmNewPasswordController.clear();
+                // Điều hướng về trang login
+                context.go('/login'); 
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

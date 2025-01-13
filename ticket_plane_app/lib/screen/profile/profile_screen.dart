@@ -6,13 +6,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ticket_plane_app/screen/login/login_screen.dart';
-import 'package:ticket_plane_app/screen/profile/bloc/profile_bloc.dart';
-import 'package:ticket_plane_app/screen/profile/bloc/profile_event.dart';
-import 'package:ticket_plane_app/screen/profile/bloc/profile_state.dart';
-
-import 'package:ticket_plane_app/screen/profile/passenger.dart';
+import 'package:ticket_plane_app/screen/profile/UpdateProfileScreen.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_bloc.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_event.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_state.dart';
@@ -30,29 +24,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final LocalAuthentication auth = LocalAuthentication();
   late PassengerRepository _passengerRepository;
   String? _userId;
+
   @override
-void didChangeDependencies() {
-  super.didChangeDependencies();
+  void initState() {
+    super.initState();
+    _passengerRepository = PassengerRepository();
+    _loadUserIdAndProfile(); // Load data on screen initialization
+  }
 
-  // Retrieve userId from shared preferences and reload profile data
-  SharedPreferences.getInstance().then((prefs) {
-    final storedUserId = prefs.getString('userId');
-    if (storedUserId != null) {
-      _userId = storedUserId;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Ensure data is reloaded every time the screen is shown
+    _reloadProfileData();
+  }
 
-      // Trigger the LoadProfile event if userId is available
+  Future<void> _loadUserIdAndProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userId = prefs.getString('userId');
+    });
+    if (_userId != null) {
       context.read<ProfileBloc>().add(LoadProfile(userId: _userId!));
-    } else {
-      // Handle the case where userId is not found in shared preferences
-      print("Error: User ID not found in shared preferences.");
-      // Optionally navigate to the login screen or display an error message
     }
-  }).catchError((error) {
-    // Handle errors when accessing shared preferences
-    print("Error accessing shared preferences: $error");
-  });
-}
+  }
 
+  // Reload profile data (used as callback)
+  void _reloadProfileData() {
+    if (_userId != null) {
+      context.read<ProfileBloc>().add(LoadProfile(userId: _userId!));
+    }
+  }
 
   Future<bool> _authenticateWithBiometrics() async {
     try {
@@ -166,80 +168,52 @@ void didChangeDependencies() {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _passengerRepository = PassengerRepository();
-    _loadUserId();
-  }
-
-  Future<void> _loadUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _userId = prefs.getString('userId');
-    });
-    if (_userId != null) {
-      context.read<ProfileBloc>().add(LoadProfile(userId: _userId!));
-    }
-  }
-
-  // @override
-  // void didUpdateWidget(covariant ProfileScreen oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  // }
-
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   context.read<ProfileBloc>().add(LoadUserProfile());
-  // }
-
-  @override
   Widget build(BuildContext context) {
     return BlocListener<ProfileBloc, ProfileState>(
-        listener: (context, state) {
-          if (state is ProfileLoggedOut) {
-            if (mounted) {
-              context.go('/login');
-            }
-          } else if (state is ProfileChangePasswordSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Đổi mật khẩu thành công!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          } else if (state is ProfileChangePasswordFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+      listener: (context, state) {
+        if (state is ProfileLoggedOut) {
+          if (mounted) {
+            context.go('/login');
           }
-        },
-        child: Scaffold(
-          body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF0D47A1),
-                  Color(0xFF1976D2),
-                ],
-              ),
+        } else if (state is ProfileChangePasswordSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Đổi mật khẩu thành công!'),
+              backgroundColor: Colors.green,
             ),
-            child: SafeArea(
-              child: BlocBuilder<ProfileBloc, ProfileState>(
-                builder: (context, state) {
-                  if (state is ProfileLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is ProfileError) {
-                    return Center(child: Text('Error: ${state.message}'));
-                  } else if (state is ProfileLoaded) {
-                    final combinedUserData = state.userData;
+          );
+        } else if (state is ProfileChangePasswordFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF0D47A1),
+                Color(0xFF1976D2),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: BlocBuilder<ProfileBloc, ProfileState>(
+              builder: (context, state) {
+                if (state is ProfileLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is ProfileError) {
+                  return Center(child: Text('Error: ${state.message}'));
+                } else if (state is ProfileLoaded) {
+                  final combinedUserData = state.userData;
 
-                    return Column(
+                  return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Header
@@ -371,8 +345,6 @@ void didChangeDependencies() {
                                     Center(
                                       child: ElevatedButton(
                                         onPressed: () {
-                                          // context.read<ProfileBloc>().add(
-                                          //     ResetProfileState()); // Reset state
                                           context.pushNamed('change_password');
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -395,10 +367,20 @@ void didChangeDependencies() {
                                       ),
                                     ),
                                     const SizedBox(height: 20),
+                                    // Update Profile Button
                                     Center(
                                       child: ElevatedButton(
-                                        onPressed: () {
-                                          context.pushNamed('update_profile');
+                                        onPressed: () async {
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  UpdateProfileScreen(
+                                                onUpdate: _reloadProfileData,
+                                              ),
+                                            ),
+                                          );
+                                          _reloadProfileData();
                                         },
                                         style: ElevatedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
@@ -476,18 +458,18 @@ void didChangeDependencies() {
                             ),
                           ),
                         ),
-                      ],
-                    );
-                  } else if (state is ProfileInitial) {
-                    return const Center(child: Text("User not logged in."));
-                  } else {
-                    return Container(); // Or provide a default widget
-                  }
-                },
-              ),
+                      ]);
+                } else if (state is ProfileInitial) {
+                  return const Center(child: Text("User not logged in."));
+                } else {
+                  return Container(); // Or provide a default widget
+                }
+              },
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   Widget _buildUserInfoItem(IconData icon, String title, String value) {
@@ -520,6 +502,4 @@ void didChangeDependencies() {
       ),
     );
   }
-
-  
 }
