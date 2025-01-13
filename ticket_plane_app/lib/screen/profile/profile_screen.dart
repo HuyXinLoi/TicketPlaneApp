@@ -6,6 +6,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ticket_plane_app/screen/profile/UpdateProfileScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/screen/infomationsingup/bloc/infomation_signup_bloc.dart';
 import 'package:ticket_plane_app/screen/login/bloc/login_bloc.dart';
@@ -30,32 +31,69 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen>
+    with WidgetsBindingObserver {
+  // Add WidgetsBindingObserver
   final String _isBiometricsEnabledKey = 'isBiometricsEnabled';
   final LocalAuthentication auth = LocalAuthentication();
   late PassengerRepository _passengerRepository;
   String? _userId;
+
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
+    _passengerRepository = PassengerRepository();
+    _loadUserIdAndProfile(); // Load data on screen initialization
+    WidgetsBinding.instance
+        .addObserver(this); // Add observer for didChangeAppLifecycleState
+  }
 
-    // Retrieve userId from shared preferences and reload profile data
-    SharedPreferences.getInstance().then((prefs) {
-      final storedUserId = prefs.getString('userId');
-      if (storedUserId != null) {
-        _userId = storedUserId;
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // Remove observer in dispose
+    super.dispose();
+  }
 
-        // Trigger the LoadProfile event if userId is available
-        context.read<ProfileBloc>().add(LoadProfile(userId: _userId!));
-      } else {
-        // Handle the case where userId is not found in shared preferences
-        print("Error: User ID not found in shared preferences.");
-        // Optionally navigate to the login screen or display an error message
-      }
-    }).catchError((error) {
-      // Handle errors when accessing shared preferences
-      print("Error accessing shared preferences: $error");
-    });
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _reloadProfileData(); // Reload data when app resumes
+    }
+  }
+
+  Future<void> _loadUserIdAndProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    _userId = prefs.getString('userId');
+    if (_userId != null) {
+      context.read<ProfileBloc>().add(LoadProfile(userId: _userId!));
+    }
+  }
+
+  // Reload profile data
+  void _reloadProfileData() {
+    if (_userId != null) {
+      context.read<ProfileBloc>().add(LoadProfile(userId: _userId!));
+    }
+  }
+
+  // Handle showing Flushbar safely
+  void _safeShowFlushbar(String message, Color color) {
+    if (mounted) {
+      // Check if the widget is still in the tree
+      Flushbar(
+        message: message,
+        margin: const EdgeInsets.all(8),
+        borderRadius: BorderRadius.circular(8),
+        backgroundColor: color,
+        duration: const Duration(seconds: 3),
+        flushbarPosition: FlushbarPosition.TOP,
+        icon: const Icon(
+          Icons.error,
+          size: 28,
+          color: Colors.white,
+        ),
+      ).show(context);
+    }
   }
 
   Future<bool> _authenticateWithBiometrics() async {
@@ -70,15 +108,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return authenticated;
     } on PlatformException catch (e) {
       if (e.code == 'NotAvailable' || e.code == 'NotEnrolled') {
-        _showFlushbar(
+        _safeShowFlushbar(
             'Thiết bị không hỗ trợ hoặc chưa thiết lập sinh trắc học.',
             Colors.orangeAccent);
       } else {
-        _showFlushbar(
+        _safeShowFlushbar(
             'Xác Thực Sinh Trắc Học Lỗi hoặc bị hủy.', Colors.redAccent);
       }
       return false;
     }
+  }
+
+  Future<void> _setBiometricsEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isBiometricsEnabledKey, value);
   }
 
   Future<void> _toggleBiometrics(bool value) async {
@@ -92,9 +135,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {});
   }
 
-  Future<void> _setBiometricsEnabled(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_isBiometricsEnabledKey, value);
+  Widget _buildUserInfoItem(IconData icon, String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF1976D2)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<bool> _getBiometricsEnabled() async {
@@ -147,22 +216,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showFlushbar(String message, Color color) {
-    Flushbar(
-      message: message,
-      margin: const EdgeInsets.all(8),
-      borderRadius: BorderRadius.circular(8),
-      backgroundColor: color,
-      duration: const Duration(seconds: 3),
-      flushbarPosition: FlushbarPosition.TOP,
-      icon: const Icon(
-        Icons.error,
-        size: 28,
-        color: Colors.white,
-      ),
-    ).show(context);
-  }
-
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('userId');
@@ -170,80 +223,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _passengerRepository = PassengerRepository();
-    _loadUserId();
-  }
-
-  Future<void> _loadUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _userId = prefs.getString('userId');
-    });
-    if (_userId != null) {
-      context.read<ProfileBloc>().add(LoadProfile(userId: _userId!));
-    }
-  }
-
-  // @override
-  // void didUpdateWidget(covariant ProfileScreen oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  // }
-
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   context.read<ProfileBloc>().add(LoadUserProfile());
-  // }
-
-  @override
   Widget build(BuildContext context) {
     return BlocListener<ProfileBloc, ProfileState>(
-        listener: (context, state) {
-          if (state is ProfileLoggedOut) {
-            if (mounted) {
-              context.go('/login');
-            }
-          } else if (state is ProfileChangePasswordSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Đổi mật khẩu thành công!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          } else if (state is ProfileChangePasswordFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+      listener: (context, state) {
+        if (state is ProfileLoggedOut) {
+          if (mounted) {
+            context.go('/login');
           }
-        },
-        child: Scaffold(
-          body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF0D47A1),
-                  Color(0xFF1976D2),
-                ],
-              ),
+        } else if (state is ProfileChangePasswordSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Đổi mật khẩu thành công!'),
+              backgroundColor: Colors.green,
             ),
-            child: SafeArea(
-              child: BlocBuilder<ProfileBloc, ProfileState>(
-                builder: (context, state) {
-                  if (state is ProfileLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is ProfileError) {
-                    return Center(child: Text('Error: ${state.message}'));
-                  } else if (state is ProfileLoaded) {
-                    final combinedUserData = state.userData;
+          );
+        } else if (state is ProfileChangePasswordFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF0D47A1),
+                Color(0xFF1976D2),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: BlocBuilder<ProfileBloc, ProfileState>(
+              builder: (context, state) {
+                if (state is ProfileLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is ProfileError) {
+                  return Center(child: Text('Error: ${state.message}'));
+                } else if (state is ProfileLoaded) {
+                  final combinedUserData = state.userData;
 
-                    return Column(
+                  return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Header
@@ -307,231 +332,210 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(20.0),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(height: 20),
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 20),
 
-                                    // Personal Information
-                                    const Text(
-                                      'Thông tin cá nhân',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
+                                      // Personal Information
+                                      const Text(
+                                        'Thông tin cá nhân',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    _buildUserInfoItem(
-                                      Icons.email,
-                                      'Email',
-                                      combinedUserData.containsKey('email')
-                                          ? combinedUserData['email']
-                                          : 'N/A',
-                                    ),
-                                    _buildUserInfoItem(
-                                      Icons.phone,
-                                      'Số điện thoại',
-                                      combinedUserData
-                                              .containsKey('phoneNumber')
-                                          ? combinedUserData['phoneNumber']
-                                          : 'N/A',
-                                    ),
-                                    _buildUserInfoItem(
-                                      Icons.location_on,
-                                      'Địa chỉ',
-                                      combinedUserData.containsKey('address')
-                                          ? combinedUserData['address']
-                                          : 'N/A',
-                                    ),
-                                    _buildUserInfoItem(
-                                      Icons.card_membership,
-                                      'Passport',
-                                      combinedUserData.containsKey('passport')
-                                          ? combinedUserData['passport']
-                                          : 'N/A',
-                                    ),
-                                    _buildUserInfoItem(
-                                      Icons.cake,
-                                      'Ngày sinh',
-                                      combinedUserData
-                                              .containsKey('dateOfBirth')
-                                          ? (combinedUserData['dateOfBirth']
-                                                  as Timestamp)
-                                              .toDate()
-                                              .toString()
-                                              .substring(0, 10)
-                                          : 'N/A',
-                                    ),
-                                    _buildUserInfoItem(
-                                      Icons.person,
-                                      'Giới tính',
-                                      combinedUserData.containsKey('gender')
-                                          ? combinedUserData['gender']
-                                          : 'N/A',
-                                    ),
+                                      const SizedBox(height: 10),
+                                      _buildUserInfoItem(
+                                        Icons.email,
+                                        'Email',
+                                        combinedUserData.containsKey('email')
+                                            ? combinedUserData['email']
+                                            : 'N/A',
+                                      ),
+                                      _buildUserInfoItem(
+                                        Icons.phone,
+                                        'Số điện thoại',
+                                        combinedUserData
+                                                .containsKey('phoneNumber')
+                                            ? combinedUserData['phoneNumber']
+                                            : 'N/A',
+                                      ),
+                                      _buildUserInfoItem(
+                                        Icons.location_on,
+                                        'Địa chỉ',
+                                        combinedUserData.containsKey('address')
+                                            ? combinedUserData['address']
+                                            : 'N/A',
+                                      ),
+                                      _buildUserInfoItem(
+                                        Icons.card_membership,
+                                        'Passport',
+                                        combinedUserData.containsKey('passport')
+                                            ? combinedUserData['passport']
+                                            : 'N/A',
+                                      ),
+                                      _buildUserInfoItem(
+                                        Icons.cake,
+                                        'Ngày sinh',
+                                        combinedUserData
+                                                .containsKey('dateOfBirth')
+                                            ? (combinedUserData['dateOfBirth']
+                                                    as Timestamp)
+                                                .toDate()
+                                                .toString()
+                                                .substring(0, 10)
+                                            : 'N/A',
+                                      ),
+                                      _buildUserInfoItem(
+                                        Icons.person,
+                                        'Giới tính',
+                                        combinedUserData.containsKey('gender')
+                                            ? combinedUserData['gender']
+                                            : 'N/A',
+                                      ),
 
-                                    const SizedBox(height: 30),
+                                      const SizedBox(height: 30),
 
-                                    // Change Password Button
-                                    Center(
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          // context.read<ProfileBloc>().add(
-                                          //     ResetProfileState()); // Reset state
-                                          context.pushNamed('change_password');
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 15, horizontal: 100),
-                                          backgroundColor: Colors.blueAccent,
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
+                                      // Change Password Button
+                                      Center(
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            context
+                                                .pushNamed('change_password');
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 15, horizontal: 100),
+                                            backgroundColor: Colors.blueAccent,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                            ),
                                           ),
-                                        ),
-                                        child: const Text(
-                                          'Đổi mật khẩu',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    Center(
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          context.pushNamed('update_profile');
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 15, horizontal: 100),
-                                          backgroundColor: Colors.orangeAccent,
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                          ),
-                                        ),
-                                        child: const Text(
-                                          'Cập Nhật Thông Tin',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
+                                          child: const Text(
+                                            'Đổi mật khẩu',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 30),
-                                    Center(
-                                      child: ElevatedButton(
-                                        onPressed: () =>
-                                            _showBiometricsScreen(context),
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 15, horizontal: 60),
-                                          backgroundColor: Colors.green,
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
+                                      const SizedBox(height: 20),
+                                      // Update Profile Button
+                                      Center(
+                                        child: ElevatedButton(
+                                          onPressed: () async {
+                                            await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    UpdateProfileScreen(
+                                                  onUpdate: _reloadProfileData,
+                                                ),
+                                              ),
+                                            );
+                                            _reloadProfileData();
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 15, horizontal: 100),
+                                            backgroundColor:
+                                                Colors.orangeAccent,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                            ),
                                           ),
-                                        ),
-                                        child: const Text(
-                                          'Sinh trắc học',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
+                                          child: const Text(
+                                            'Cập Nhật Thông Tin',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(height: 30),
+                                      Center(
+                                        child: ElevatedButton(
+                                          onPressed: () =>
+                                              _showBiometricsScreen(context),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 15, horizontal: 60),
+                                            backgroundColor: Colors.green,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'Sinh trắc học',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
 
-                                    const SizedBox(height: 30),
-                                    // Logout Button
-                                    Center(
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          context
-                                              .read<ProfileBloc>()
-                                              .add(LogoutButtonPressed());
-                                          context
-                                              .read<LoginBloc>()
-                                              .add(LogOut());
-                                          context
-                                              .read<SignupBloc>()
-                                              .add(LogOutSignUp());
-                                          context
-                                              .read<UserInfoBloc>()
-                                              .add(UserInfoLogOut());
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 15, horizontal: 100),
-                                          backgroundColor: Colors.redAccent,
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
+                                      const SizedBox(height: 30),
+                                      // Logout Button
+                                      Center(
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            context
+                                                .read<ProfileBloc>()
+                                                .add(LogoutButtonPressed());
+                                            context
+                                                .read<LoginBloc>()
+                                                .add(LogOut());
+                                            context
+                                                .read<SignupBloc>()
+                                                .add(LogOutSignUp());
+                                            context
+                                                .read<UserInfoBloc>()
+                                                .add(UserInfoLogOut());
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 15, horizontal: 100),
+                                            backgroundColor: Colors.redAccent,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                            ),
                                           ),
-                                        ),
-                                        child: const Text(
-                                          'Đăng xuất',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
+                                          child: const Text(
+                                            'Đăng xuất',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                    ]),
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    );
-                  } else if (state is ProfileInitial) {
-                    return const Center(child: Text("User not logged in."));
-                  } else {
-                    return Container(); // Or provide a default widget
-                  }
-                },
-              ),
+                      ]);
+                } else if (state is ProfileInitial) {
+                  return const Center(child: Text("User not logged in."));
+                } else {
+                  return Container(); // Or provide a default widget
+                }
+              },
             ),
           ),
-        ));
-  }
-
-  Widget _buildUserInfoItem(IconData icon, String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF1976D2)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
