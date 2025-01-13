@@ -70,6 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (authenticated) {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('biologic');
+      await prefs.setString('userId', userId!);
       context.go('/nav');
     } else {
       Flushbar(
@@ -94,7 +97,21 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
           if (state.status == LoginStates.success) {
-            context.go('/nav');
+            Flushbar(
+              message: 'Đăng Nhập Thành Công',
+              margin: const EdgeInsets.all(8),
+              borderRadius: BorderRadius.circular(8),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+              flushbarPosition: FlushbarPosition.TOP,
+              icon: const Icon(
+                Icons.error,
+                size: 28,
+                color: Colors.white,
+              ),
+            ).show(context).then((_) {
+              context.go('/nav');
+            });
           } else if (state.status == LoginStates.failure) {
             Flushbar(
               message: state.errorMessage ?? 'Đăng Nhập Thất Bại',
@@ -179,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       children: [
         Text(
-          _username.isNotEmpty ? 'Chào Mừng, $_username!' : 'Xin Chào!',
+          _username.isNotEmpty ? 'Welcome Back, $_username!' : 'Xin Chào!',
           style: const TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
@@ -269,7 +286,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildLoginButton() {
     return BlocBuilder<LoginBloc, LoginState>(
       builder: (context, state) {
-        return state.status == LoginStates.loading
+        return state.status == LoginStates.loading ||
+                state.status == LoginStates.success
             ? const CircularProgressIndicator()
             : ElevatedButton(
                 onPressed: () {

@@ -31,6 +31,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
           if (userDoc.exists) {
             userName = userDoc.get('name');
+            await prefs.setString('username', userName!);
             userImageUrl = userDoc.get('urlImage');
           } else {
             print('User document not found.');

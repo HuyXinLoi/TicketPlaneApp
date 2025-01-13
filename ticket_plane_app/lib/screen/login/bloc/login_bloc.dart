@@ -23,6 +23,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LoginWithApplePressed>(_onLoginWithApplePressed);
     on<LoginEmailValidationChanged>(_onEmailValidationChanged);
     on<LoginPasswordValidationChanged>(_onPasswordValidationChanged);
+    on<LogOut>(_onLogOut);
   }
 
   void _onEmailChanged(LoginEmailChanged event, Emitter<LoginState> emit) {
@@ -196,6 +197,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       LoginPasswordValidationChanged event, Emitter<LoginState> emit) {
     final isPasswordValid = _validatePassword(event.password);
     emit(state.copyWith(isPasswordValid: isPasswordValid));
+  }
+
+  void _onLogOut(LogOut event, Emitter<LoginState> emit) {
+    emit(state.copyWith(status: LoginStates.initial));
   }
 
   bool _validateEmail(String email) {
