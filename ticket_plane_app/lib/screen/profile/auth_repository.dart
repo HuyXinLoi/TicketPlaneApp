@@ -8,12 +8,6 @@ class AuthRepository {
 
   Future<void> signOut() async {
     try {
-      // Lấy instance của SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      // Xóa dữ liệu đăng nhập
-      await prefs.remove('username');
-      await prefs.remove('password');
-
       // Đăng xuất khỏi Firebase
       await _firebaseAuth.signOut();
     } catch (e) {

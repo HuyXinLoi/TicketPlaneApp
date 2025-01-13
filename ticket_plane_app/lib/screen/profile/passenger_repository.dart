@@ -1,56 +1,63 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ticket_plane_app/screen/profile/passenger.dart';
 
 class PassengerRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _db =
+      FirebaseFirestore.instance; // Initialize FirebaseFirestore
 
-  // Giữ nguyên hàm getUserById để lấy thông tin cơ bản từ bảng passengers
-  Future<Passenger?> getUserById(String userId) async {
-    if (userId.isEmpty) {
-      print("Error: userId is empty.");
-      return null;
-    }
+  Future<Passenger> getUserById(String userId) async {
     try {
-      print("Fetching user with ID: $userId");
-      DocumentSnapshot doc = await _firestore
-          .collection('passengers')
-          .doc(userId)
-          .get();
-
-      if (doc.exists) {
-        print("User found: ${doc.data()}");
-        return Passenger.fromJson(doc.data() as Map<String, dynamic>);
+       print("PassengerRepository - Fetching data from collection: users"); 
+      DocumentSnapshot userDoc =
+          await _db.collection('passengers').doc(userId).get();
+      if (userDoc.exists) {
+        return Passenger.fromJson(userDoc.data() as Map<String, dynamic>);
       } else {
-        print("User not found.");
-        return null;
+        throw Exception('User not found');
       }
     } catch (e) {
-      print("Error getting user: $e");
-      return null;
+      print("Failed to get user: $e");
+      throw e;
     }
   }
 
-  // Hàm mới để lấy thông tin đầy đủ từ bảng users
   Future<Map<String, dynamic>?> getUserData(String userId) async {
-    if (userId.isEmpty) {
-      print("Error: userId is empty.");
+  try {
+    print("PassengerRepository - Fetching data for userId: $userId");
+    DocumentSnapshot userDoc =
+        await _db.collection('users').doc(userId).get(); 
+    print("PassengerRepository - DocumentSnapshot: ${userDoc.data()}"); // Print the data
+
+    if (userDoc.exists) {
+      final data = userDoc.data() as Map<String, dynamic>?;
+      print("PassengerRepository - Returning data: $data");
+      return data;
+    } else {
+      print("PassengerRepository - User data not found for userId: $userId");
       return null;
     }
-    try {
-      print("Fetching user data with ID: $userId");
-      DocumentSnapshot doc =
-          await _firestore.collection('users').doc(userId).get();
+  } catch (e) {
+    print("PassengerRepository - Failed to get user data: $e");
+    throw e;
+  }
+}
 
-      if (doc.exists) {
-        print("User data found: ${doc.data()}");
-        return doc.data() as Map<String, dynamic>;
-      } else {
-        print("User data not found.");
-        return null;
+  Future<void> updateUser(String userId, Map<String, dynamic> data) async {
+    try {
+      // Update the user document in Firestore
+      await _db.collection('passengers').doc(userId).update(data);
+
+      // If updating email, update it in Firebase Authentication
+      if (data.containsKey('email')) {
+        User? firebaseUser = FirebaseAuth.instance.currentUser;
+        if (firebaseUser != null && firebaseUser.uid == userId) {
+          await firebaseUser.updateEmail(data['email']);
+        }
       }
     } catch (e) {
-      print("Error getting user data: $e");
-      return null;
+      print("Failed to update user: $e");
+      throw e;
     }
   }
 }
