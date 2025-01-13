@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:ticket_plane_app/screen/history/history_screen.dart';
 import 'package:ticket_plane_app/screen/home/home_screen.dart';
 import 'package:ticket_plane_app/screen/profile/profile_screen.dart';
 import 'package:ticket_plane_app/screen/search/search_screen.dart';
@@ -16,8 +17,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
   final appScreens = [
     HomeScreen(),
     SearchScreen(),
-    const Center(child: Text("Tickets")),
-    const ProfileScreen(),
+    HistoryScreen(),
+    ProfileScreen(),
   ];
 
   //change our index for BottomNavBar

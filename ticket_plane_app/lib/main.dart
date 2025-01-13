@@ -6,6 +6,7 @@ import 'package:ticket_plane_app/base/route.dart';
 import 'package:ticket_plane_app/screen/booking/bloc/booking_bloc.dart';
 import 'package:ticket_plane_app/screen/flight/bloc/flight_bloc.dart';
 import 'package:ticket_plane_app/screen/forgotpassword/bloc/forgot_password_bloc.dart';
+import 'package:ticket_plane_app/screen/history/bloc/history_bloc.dart';
 import 'package:ticket_plane_app/screen/infomationsingup/bloc/infomation_signup_bloc.dart';
 import 'package:ticket_plane_app/screen/infomationsingup/data/user_info_repository.dart';
 import 'package:ticket_plane_app/screen/home/bloc/home_bloc.dart';
@@ -61,6 +62,9 @@ class MainApp extends StatelessWidget {
         ),
         BlocProvider<TicketBloc>(
           create: (context) => TicketBloc(),
+        ),
+        BlocProvider<HistoryBloc>(
+          create: (context) => HistoryBloc(),
         ),
         // Thêm các BLoC khác nếu cần
         BlocProvider<ProfileBloc>(

@@ -4,12 +4,14 @@ import 'package:ticket_plane_app/screen/booking/bloc/booking_bloc.dart';
 import 'package:ticket_plane_app/screen/booking/bloc/booking_event.dart';
 import 'package:ticket_plane_app/screen/booking/bloc/booking_state.dart';
 import 'package:ticket_plane_app/screen/booking/payment_screen.dart';
+import 'package:ticket_plane_app/screen/ticket/data/flight.dart';
 import 'package:ticket_plane_app/screen/ticket/data/ticket.dart';
 
 class BookingScreen extends StatefulWidget {
   final Ticket ticket;
 
-  const BookingScreen({Key? key, required this.ticket}) : super(key: key);
+  const BookingScreen({Key? key, required this.ticket, required Flight flight})
+      : super(key: key);
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();

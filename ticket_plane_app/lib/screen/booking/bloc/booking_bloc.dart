@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ticket_plane_app/screen/booking/bloc/booking_event.dart';
 import 'package:ticket_plane_app/screen/booking/bloc/booking_state.dart';
 
@@ -15,11 +16,11 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     emit(state.copyWith(status: BookingStatus.loading));
     try {
       // Get the current user's ID
-      final userId = FirebaseAuth.instance.currentUser?.uid;
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
       if (userId == null) {
         throw Exception("User not logged in.");
       }
-
       // Add the current user's ID to the booking
       final bookingWithUser = event.booking.copyWith(userId: userId);
 
