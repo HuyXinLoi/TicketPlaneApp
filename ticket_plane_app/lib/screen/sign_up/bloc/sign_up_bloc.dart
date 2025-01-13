@@ -107,7 +107,6 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
         final prefs = await SharedPreferences.getInstance();
         final userId = prefs.setString('userId', userCredential.user!.uid);
         final email = prefs.setString('email', userCredential.user!.email!);
-
         emit(state.copyWith(
             status: SignupStatus.success, userId: userCredential.user!.uid));
       } on FirebaseAuthException catch (e) {

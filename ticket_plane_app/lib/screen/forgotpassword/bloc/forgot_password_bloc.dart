@@ -45,7 +45,9 @@ class ForgotPasswordBloc
         return;
       }
       await _auth.sendPasswordResetEmail(email: email);
+
       emit(ForgotPasswordSuccess());
+      await Future.delayed(Duration(seconds: 3));
     } on FirebaseAuthException catch (e) {
       emit(ForgotPasswordFailure(error: e.message ?? 'Firebase error.'));
     } catch (e) {

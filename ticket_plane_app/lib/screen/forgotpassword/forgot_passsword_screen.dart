@@ -40,13 +40,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       body: BlocListener<ForgotPasswordBloc, ForgotPasswordState>(
         listener: (context, state) {
           if (state is ForgotPasswordSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Đã Gửi Email Khôi Phục Mật Khẩu. Vui Lòng Kiểm Tra!',
-                ),
+            Flushbar(
+              message: 'Đã Gửi Email Khôi Phục Mật Khẩu. Vui Lòng Kiểm Tra!',
+              margin: const EdgeInsets.all(8),
+              borderRadius: BorderRadius.circular(8),
+              backgroundColor: Colors.redAccent,
+              duration: const Duration(seconds: 3),
+              flushbarPosition: FlushbarPosition.TOP,
+              icon: const Icon(
+                Icons.error,
+                size: 28,
+                color: Colors.white,
               ),
-            );
+            ).show(context);
             context.go('/login');
           } else if (state is ForgotPasswordFailure) {
             Flushbar(

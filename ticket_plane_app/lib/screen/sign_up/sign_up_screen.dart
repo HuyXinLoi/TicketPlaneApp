@@ -27,19 +27,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: BlocListener<SignupBloc, SignupState>(
         listener: (context, state) {
           if (state.status == SignupStatus.success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Đăng ký thành công'),
-                duration: const Duration(seconds: 3),
+            Flushbar(
+              message: 'Đăng ký thành công',
+              margin: const EdgeInsets.all(8),
+              borderRadius: BorderRadius.circular(8),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+              flushbarPosition: FlushbarPosition.TOP,
+              icon: const Icon(
+                Icons.error,
+                size: 28,
+                color: Colors.white,
               ),
-            );
-            if (state.userId != null) {
-              context.go('/user-info/${state.userId}',
-                  extra: 'Đăng ký thành công');
-            }
+            ).show(context).then((_) {
+              if (state.userId != null) {
+                context.go('/user-info/${state.userId}',
+                    extra: 'Đăng ký thành công');
+              }
+            });
           } else if (state.status == SignupStatus.failure) {
             Flushbar(
-              message: state.errorMessage ?? 'Đăng Nhập Thất Bại',
+              message: state.errorMessage ?? 'Đăng Ký Thất Bại',
               margin: const EdgeInsets.all(8),
               borderRadius: BorderRadius.circular(8),
               backgroundColor: Colors.redAccent,
@@ -244,7 +252,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget _buildSignUpButton() {
     return BlocBuilder<SignupBloc, SignupState>(
       builder: (context, state) {
-        return state.status == SignupStatus.loading
+        return state.status == SignupStatus.loading ||
+                state.status == SignupStatus.success
             ? const CircularProgressIndicator()
             : ElevatedButton(
                 onPressed: () {

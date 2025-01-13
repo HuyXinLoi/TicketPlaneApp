@@ -31,12 +31,12 @@ class _SplashScreenState extends State<SplashScreen> {
     final isFirstTime = prefs.getBool('isFirstTime') ?? true;
     final userId = prefs.getString('userId');
 
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 2), () {
       if (mounted && isDeviceConnected) {
         if (isFirstTime) {
           prefs.setBool('isFirstTime', false);
           context.go('/intro');
-        } else if (userId!.isEmpty) {
+        } else if (userId == null || userId.isEmpty) {
           context.go('/login');
         } else {
           context.go('/nav');

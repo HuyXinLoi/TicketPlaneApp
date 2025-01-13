@@ -111,6 +111,7 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
           email: email);
       await _userInfoRepository.saveUserInfo(userInfo, userId);
       emit(state.copyWith(status: UserInfoStatus.success));
+      await Future.delayed(Duration(seconds: 3));
     } catch (e) {
       emit(state.copyWith(
         status: UserInfoStatus.failure,
