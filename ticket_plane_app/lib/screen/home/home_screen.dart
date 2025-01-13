@@ -93,8 +93,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               radius: 25,
                               backgroundImage: state.userImageUrl != null
                                   ? NetworkImage('${state.userImageUrl!}')
-                                  : NetworkImage(
-                                      'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
+                                  : const AssetImage(
+                                          'images/default_avatar.png')
+                                      as ImageProvider,
                             ),
                           ),
                           const SizedBox(width: 10),
