@@ -29,14 +29,17 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkFirstTime() async {
     final prefs = await SharedPreferences.getInstance();
     final isFirstTime = prefs.getBool('isFirstTime') ?? true;
+    final userId = prefs.getString('userId');
 
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted && isDeviceConnected) {
         if (isFirstTime) {
           prefs.setBool('isFirstTime', false);
           context.go('/intro');
-        } else {
+        } else if (userId!.isEmpty) {
           context.go('/login');
+        } else {
+          context.go('/nav');
         }
       } else {
         shouldNavigate = true;
