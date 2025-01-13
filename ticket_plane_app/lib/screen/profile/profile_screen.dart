@@ -7,6 +7,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ticket_plane_app/screen/infomationsingup/bloc/infomation_signup_bloc.dart';
+import 'package:ticket_plane_app/screen/login/bloc/login_bloc.dart';
+import 'package:ticket_plane_app/screen/login/bloc/login_event.dart';
 import 'package:ticket_plane_app/screen/login/login_screen.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_bloc.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_event.dart';
@@ -17,6 +20,8 @@ import 'package:ticket_plane_app/screen/profile/bloc/profile_bloc.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_event.dart';
 import 'package:ticket_plane_app/screen/profile/bloc/profile_state.dart';
 import 'package:ticket_plane_app/screen/profile/passenger_repository.dart';
+import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_bloc.dart';
+import 'package:ticket_plane_app/screen/sign_up/bloc/sign_up_event.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -31,28 +36,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late PassengerRepository _passengerRepository;
   String? _userId;
   @override
-void didChangeDependencies() {
-  super.didChangeDependencies();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-  // Retrieve userId from shared preferences and reload profile data
-  SharedPreferences.getInstance().then((prefs) {
-    final storedUserId = prefs.getString('userId');
-    if (storedUserId != null) {
-      _userId = storedUserId;
+    // Retrieve userId from shared preferences and reload profile data
+    SharedPreferences.getInstance().then((prefs) {
+      final storedUserId = prefs.getString('userId');
+      if (storedUserId != null) {
+        _userId = storedUserId;
 
-      // Trigger the LoadProfile event if userId is available
-      context.read<ProfileBloc>().add(LoadProfile(userId: _userId!));
-    } else {
-      // Handle the case where userId is not found in shared preferences
-      print("Error: User ID not found in shared preferences.");
-      // Optionally navigate to the login screen or display an error message
-    }
-  }).catchError((error) {
-    // Handle errors when accessing shared preferences
-    print("Error accessing shared preferences: $error");
-  });
-}
-
+        // Trigger the LoadProfile event if userId is available
+        context.read<ProfileBloc>().add(LoadProfile(userId: _userId!));
+      } else {
+        // Handle the case where userId is not found in shared preferences
+        print("Error: User ID not found in shared preferences.");
+        // Optionally navigate to the login screen or display an error message
+      }
+    }).catchError((error) {
+      // Handle errors when accessing shared preferences
+      print("Error accessing shared preferences: $error");
+    });
+  }
 
   Future<bool> _authenticateWithBiometrics() async {
     try {
@@ -448,9 +452,20 @@ void didChangeDependencies() {
                                     // Logout Button
                                     Center(
                                       child: ElevatedButton(
-                                        onPressed: () => context
-                                            .read<ProfileBloc>()
-                                            .add(LogoutButtonPressed()),
+                                        onPressed: () {
+                                          context
+                                              .read<ProfileBloc>()
+                                              .add(LogoutButtonPressed());
+                                          context
+                                              .read<LoginBloc>()
+                                              .add(LogOut());
+                                          context
+                                              .read<SignupBloc>()
+                                              .add(LogOutSignUp());
+                                          context
+                                              .read<UserInfoBloc>()
+                                              .add(UserInfoLogOut());
+                                        },
                                         style: ElevatedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 15, horizontal: 100),
@@ -520,6 +535,4 @@ void didChangeDependencies() {
       ),
     );
   }
-
-  
 }

@@ -91,10 +91,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             onTap: () {},
                             child: CircleAvatar(
                               radius: 25,
-                              backgroundImage: state.userImageUrl != null
-                                  ? NetworkImage('${state.userImageUrl!}')
+                              backgroundImage: state.userImageUrl != null &&
+                                      state.userImageUrl!.isNotEmpty
+                                  ? NetworkImage(state.userImageUrl!)
                                   : const AssetImage(
-                                          'images/default_avatar.png')
+                                          'assets/images/default_avt')
                                       as ImageProvider,
                             ),
                           ),
@@ -314,46 +315,52 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDestinationBanner(
       String destination, String imageUrl, String promo) {
     return Container(
-        width: 250,
-        margin: const EdgeInsets.only(right: 10),
+      width: 250,
+      margin: const EdgeInsets.only(right: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        image: DecorationImage(
+          image: imageUrl.isNotEmpty
+              ? NetworkImage(imageUrl)
+              : const AssetImage('assets/images/default_image.jpg')
+                  as ImageProvider,
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          image: DecorationImage(
-            image: NetworkImage(imageUrl),
-            fit: BoxFit.cover,
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [Colors.black.withOpacity(0.6), Colors.transparent],
           ),
         ),
-        child: Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Colors.black.withOpacity(0.6), Colors.transparent])),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  destination,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                destination,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
                 ),
-                Text(
-                  promo,
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
+              ),
+              Text(
+                promo,
+                style: const TextStyle(
+                  color: Colors.white,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   Widget _buildFlightItem(Flight flight) {
@@ -420,55 +427,59 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildDestinationCard(String title, String imageUrl) {
     return GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DestinationScreen(
-                destination: title,
-                flights: context.read<HomeBloc>().state.flights,
-              ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DestinationScreen(
+              destination: title,
+              flights: context.read<HomeBloc>().state.flights,
             ),
-          );
-        },
+          ),
+        );
+      },
+      child: Container(
+        width: 200,
+        height: 150,
+        margin: const EdgeInsets.only(right: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          image: DecorationImage(
+            image: imageUrl.isNotEmpty
+                ? NetworkImage(imageUrl)
+                : const AssetImage('assets/images/default_image.jpg')
+                    as ImageProvider,
+            fit: BoxFit.cover,
+          ),
+        ),
         child: Container(
-          width: 200,
-          height: 150,
-          margin: const EdgeInsets.only(right: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            image: DecorationImage(
-              image: NetworkImage(imageUrl),
-              fit: BoxFit.cover,
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [Colors.black.withOpacity(0.6), Colors.transparent],
             ),
           ),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [Colors.black.withOpacity(0.6), Colors.transparent],
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
