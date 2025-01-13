@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
               duration: const Duration(seconds: 2),
               flushbarPosition: FlushbarPosition.TOP,
               icon: const Icon(
-                Icons.error,
+                Icons.check_circle,
                 size: 28,
                 color: Colors.white,
               ),
