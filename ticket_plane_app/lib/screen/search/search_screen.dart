@@ -2,6 +2,7 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:ticket_plane_app/screen/flight/flight_screen.dart';
 import 'package:ticket_plane_app/screen/search/bloc/search_bloc.dart';
 import 'package:ticket_plane_app/screen/search/bloc/search_event.dart';
 import 'package:ticket_plane_app/screen/search/bloc/search_state.dart';
@@ -179,27 +180,37 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   itemBuilder: (context, index) {
                     Flight flight = state.flights[index];
-                    return Container(
-                      color:
-                          const Color(0xFFFAFAFA), // Màu nền nhạt cho ListTile
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
-                        title: Text(
-                          '${flight.tenChuyenBay} - ${flight.diemDi} đến ${flight.diemDen}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                    return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FlightScreen(
+                                  flightId: state.flights[index].flightId),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          color: const Color(
+                              0xFFFAFAFA), // Màu nền nhạt cho ListTile
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(16),
+                            title: Text(
+                              '${flight.tenChuyenBay} - ${flight.diemDi} đến ${flight.diemDen}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Text(
+                              'Khởi hành: ${_dateFormat.format(flight.thoiGianDi.toDate())}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey, // Màu xám cho thông tin phụ
+                              ),
+                            ),
                           ),
-                        ),
-                        subtitle: Text(
-                          'Khởi hành: ${_dateFormat.format(flight.thoiGianDi.toDate())}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey, // Màu xám cho thông tin phụ
-                          ),
-                        ),
-                      ),
-                    );
+                        ));
                   },
                 ),
               ),

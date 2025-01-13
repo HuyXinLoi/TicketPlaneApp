@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:ticket_plane_app/screen/booking/booking_screen.dart';
 import 'package:ticket_plane_app/screen/flight/bloc/flight_bloc.dart';
 import 'package:ticket_plane_app/screen/flight/data/flight.dart';
+import 'package:ticket_plane_app/screen/ticket/bloc/ticket_bloc.dart';
 import 'package:ticket_plane_app/screen/ticket/ticket_screen.dart';
 
 class FlightScreen extends StatefulWidget {
@@ -51,7 +54,27 @@ class _FlightScreenState extends State<FlightScreen> {
                     width: double.infinity,
                     fit: BoxFit.cover,
                   ),
-                  // Hình ảnh điểm đến
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(
+                      'Chuyến bay từ ${flight.diemDi} đến ${flight.diemDen}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(
+                      'Giờ đi: ${DateFormat('HH:mm - dd/MM/yyyy').format(flight.thoiGianDi)}', // Format thời gian
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Image.network(
@@ -61,13 +84,12 @@ class _FlightScreenState extends State<FlightScreen> {
                       fit: BoxFit.cover,
                     ),
                   ),
-
-                  // Mô tả
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
                       flight.moTa,
                       style: const TextStyle(fontSize: 16),
+                      textAlign: TextAlign.justify,
                     ),
                   ),
 
@@ -75,20 +97,20 @@ class _FlightScreenState extends State<FlightScreen> {
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
-                        // Chuyển đến màn hình đặt vé (ve_screen)
-                        // Cần truyền thông tin chuyến bay sang màn hình đặt vé
-                        // Navigator.push(
-                        //     // context,
-                        //     // MaterialPageRoute(
-                        //     //   builder: (context) => VeScreen(
-                        //     //     flight: flight,
-                        //     //   ),
-                        //     // ),
-                        //     );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BlocProvider(
+                              create: (context) => TicketBloc(),
+                              child: TicketScreen(flightId: flight.flightId),
+                            ),
+                          ),
+                        );
                       },
                       child: const Text('Đặt vé ngay'),
                     ),
                   ),
+                  SizedBox(height: 20),
                 ],
               ),
             );
