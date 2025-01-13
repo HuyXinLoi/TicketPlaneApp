@@ -76,6 +76,20 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
+  String _mapGenderToVietnamese(String? gender) {
+    if (gender == null) return 'N/A';
+    switch (gender) {
+      case 'Male':
+        return 'Nam';
+      case 'Female':
+        return 'Nữ';
+      case 'Other':
+        return 'Khác';
+      default:
+        return 'N/A';
+    }
+  }
+
   // Handle showing Flushbar safely
   void _safeShowFlushbar(String message, Color color) {
     if (mounted) {
@@ -136,6 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildUserInfoItem(IconData icon, String title, String value) {
+    String displayValue = _mapGenderToVietnamese(value);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -279,7 +294,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             children: [
                               const Spacer(), // Căn giữa tiêu đề
                               const Text(
-                                'Profile',
+                                '',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 20,
@@ -390,9 +405,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       _buildUserInfoItem(
                                         Icons.person,
                                         'Giới tính',
-                                        combinedUserData.containsKey('gender')
-                                            ? combinedUserData['gender']
-                                            : 'N/A',
+                                        _mapGenderToVietnamese(combinedUserData[
+                                            'gender']), // Call _mapGenderToVietnamese here
                                       ),
 
                                       const SizedBox(height: 30),
