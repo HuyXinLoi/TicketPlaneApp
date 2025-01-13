@@ -64,3 +64,16 @@ class ProfileUpdateError extends ProfileState {
 class ProfileIncorrectOldPassword extends ProfileState {
   const ProfileIncorrectOldPassword();
 }
+class ProfileChangeAvatarSuccess extends ProfileState {
+  @override
+  List<Object> get props => [];
+}
+
+class ProfileChangeAvatarFailure extends ProfileState {
+  final String message;
+
+  ProfileChangeAvatarFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

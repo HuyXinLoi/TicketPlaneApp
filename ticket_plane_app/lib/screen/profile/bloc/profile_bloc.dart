@@ -145,37 +145,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(ProfileInitial());
     });
 
-    // on<UpdateProfilePicture>((event, emit) async {
-    //   try {
-    //     final prefs = await SharedPreferences.getInstance();
-    //     final userId = prefs.getString('userId');
-
-    //     if (userId == null || userId.isEmpty) {
-    //       emit(const ProfileError(message: 'User not logged in.'));
-    //       return;
-    //     }
-
-    //     // Upload the image to Firebase Storage
-    //     final storageRef = FirebaseStorage.instance
-    //         .ref()
-    //         .child('user_images')
-    //         .child('$userId.jpg');
-    //     final file = File(event.imagePath);
-    //     final uploadTask = storageRef.putFile(file);
-    //     final snapshot = await uploadTask.whenComplete(() {});
-    //     final downloadUrl = await snapshot.ref.getDownloadURL();
-
-    //     // Update the user's profile in Firestore
-    //     await _passengerRepository.updateUser(userId, {'urlImage': downloadUrl});
-
-    //     // Update the cached user data and emit a new state
-    //     _cachedUserData?['urlImage'] = downloadUrl;
-    //     emit(ProfileLoaded(userData: _cachedUserData!));
-    //   } catch (e) {
-    //     emit(ProfileError(message: 'Failed to update profile picture: $e'));
-    //   }
-    // });
-    on<UpdatePhoneNumber>((event, emit) async {
+    on<UpdateProfile>((event, emit) async {
       emit(ProfileLoading());
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -185,69 +155,118 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           return;
         }
 
-        // Validation: Check for empty or invalid phone number
-        if (event.phoneNumber.isEmpty) {
-          emit(const ProfileUpdateError(
-              message: 'Please enter a phone number.'));
-          return;
-        }
-        if (!RegExp(r'^[0-9]{10}$').hasMatch(event.phoneNumber)) {
+        Map<String, dynamic> updates = {};
+
+        if (event.phoneNumber != null &&
+            event.phoneNumber!.isNotEmpty &&
+            RegExp(r'^[0-9]{10}$').hasMatch(event.phoneNumber!)) {
+          updates['phoneNumber'] = event.phoneNumber;
+        } else if (event.phoneNumber != null && event.phoneNumber!.isNotEmpty) {
           emit(const ProfileUpdateError(
               message: 'Please enter a valid 10-digit phone number.'));
           return;
         }
 
-        await _passengerRepository
-            .updateUser(userId, {'phoneNumber': event.phoneNumber});
-        _cachedUserData?['phoneNumber'] = event.phoneNumber;
-        emit(ProfileLoaded(userData: _cachedUserData!));
-      } catch (e) {
-        emit(ProfileError(message: 'Failed to update phone number: $e'));
-      }
-    });
-
-    on<UpdateAddress>((event, emit) async {
-      emit(ProfileLoading());
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final userId = prefs.getString('userId');
-        if (userId == null || userId.isEmpty) {
-          emit(const ProfileError(message: 'User not logged in.'));
-          return;
-        }
-
-        // Validation: Check for empty address
-        if (event.address.isEmpty) {
+        if (event.address != null && event.address!.isNotEmpty) {
+          updates['address'] = event.address;
+        } else if (event.address != null && event.address!.isEmpty) {
           emit(const ProfileUpdateError(message: 'Please enter an address.'));
           return;
         }
 
-        await _passengerRepository
-            .updateUser(userId, {'address': event.address});
-        _cachedUserData?['address'] = event.address;
-        emit(ProfileLoaded(userData: _cachedUserData!));
-      } catch (e) {
-        emit(ProfileError(message: 'Failed to update address: $e'));
-      }
-    });
+        if (event.dateOfBirth != null) {
+          updates['dateOfBirth'] = Timestamp.fromDate(event.dateOfBirth!);
+        }
 
-    on<UpdateDateOfBirth>((event, emit) async {
-      emit(ProfileLoading());
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final userId = prefs.getString('userId');
-        if (userId == null || userId.isEmpty) {
-          emit(const ProfileError(message: 'User not logged in.'));
+        if (event.name != null && event.name!.isNotEmpty) {
+          updates['name'] = event.name;
+        } else if (event.name != null && event.name!.isEmpty) {
+          emit(const ProfileUpdateError(message: 'Please enter a name.'));
           return;
         }
 
-        await _passengerRepository.updateUser(
-            userId, {'dateOfBirth': Timestamp.fromDate(event.dateOfBirth)});
-        _cachedUserData?['dateOfBirth'] = Timestamp.fromDate(event.dateOfBirth);
-        emit(ProfileLoaded(userData: _cachedUserData!));
+        if (event.passport != null && event.passport!.isNotEmpty) {
+          updates['passport'] = event.passport;
+        } else if (event.passport != null && event.passport!.isEmpty) {
+          emit(const ProfileUpdateError(message: 'Please enter a passport.'));
+          return;
+        }
+
+        if (event.gender != null && event.gender!.isNotEmpty) {
+          updates['gender'] = event.gender;
+        } else if (event.gender != null && event.gender!.isEmpty) {
+          emit(const ProfileUpdateError(message: 'Please select a gender.'));
+          return;
+        }
+        
+        // Update image URL if provided
+        if (event.imageUrl != null && event.imageUrl!.isNotEmpty) {
+          updates['urlImage'] = event.imageUrl;
+        } else if (event.imageUrl != null && event.imageUrl!.isEmpty) {
+          emit(const ProfileUpdateError(message: 'Please enter an image URL.'));
+          return;
+        }
+
+        if (updates.isNotEmpty) {
+          await _passengerRepository.updateUser(userId, updates);
+
+          // Reload data from Firestore after successful update
+          final results = await Future.wait([
+            _passengerRepository.getUserById(userId),
+            _passengerRepository.getUserData(userId),
+          ]);
+
+          final user = results[0] as Passenger?;
+          final userData = results[1] as Map<String, dynamic>?;
+
+          if (user != null && userData != null) {
+            _cachedUserData = {
+              ...user.toJson(),
+              ...?userData,
+            };
+          } else {
+            _cachedUserData = null; // Or handle error appropriately
+          }
+
+          emit(ProfileLoaded(userData: _cachedUserData!));
+        } else {
+          emit(ProfileLoaded(userData: _cachedUserData!));
+        }
       } catch (e) {
-        emit(ProfileError(message: 'Failed to update date of birth: $e'));
+        emit(ProfileError(message: 'Failed to update profile: $e'));
       }
     });
+
+    // on<ChangeAvatar>((event, emit) async {
+    //   emit(ProfileLoading());
+    //   try {
+    //     final prefs = await SharedPreferences.getInstance();
+    //     final userId = prefs.getString('userId');
+
+    //     if (userId != null) {
+    //       print("ProfileBloc: Calling updatePassengerAvatar");
+
+    //       await _passengerRepository.updatePassengerAvatar(
+    //           userId, event.newAvatarUrl);
+
+    //       print("ProfileBloc: updatePassengerAvatar completed");
+    //       emit(ProfileChangeAvatarSuccess());
+
+    //       // Reload profile to get the updated data from Firestore:
+    //       add(LoadProfile(userId: userId));
+    //     } else {
+    //       emit(ProfileChangeAvatarFailure('User ID not found.'));
+    //     }
+    //   } catch (e) {
+    //     emit(ProfileChangeAvatarFailure(e.toString()));
+    //   }
+    // });
+    on<ClearProfileCache>(_onClearProfileCache);
+  }
+
+  Future<void> _onClearProfileCache(
+      ClearProfileCache event, Emitter<ProfileState> emit) async {
+    _cachedUserData = null; // Clear the cache
+    emit(ProfileInitial()); // Emit ProfileInitial to reset the state and trigger a reload if LoadProfile is added next
   }
 }

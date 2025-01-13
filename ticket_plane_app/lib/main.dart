@@ -47,7 +47,7 @@ class MainApp extends StatelessWidget {
               userInfoRepository: UserInfoRepository(), userId: ''),
         ),
         BlocProvider<ForgotPasswordBloc>(
-            create: (context) => ForgotPasswordBloc()),
+            create: (context) => ForgotPasswordBloc()), 
         BlocProvider<HomeBloc>(
           create: (context) => HomeBloc(),
         ),
