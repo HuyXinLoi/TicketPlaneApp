@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "520500520296",
+    "project_id": "air-travel-5c4bb",
+    "storage_bucket": "air-travel-5c4bb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:520500520296:android:57f39ba3afbce811a0a2dd",
+        "android_client_info": {
+          "package_name": "com.example.ticket_plane_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZesVCdorK__z3D3aBhTjV05gKLSvACQc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

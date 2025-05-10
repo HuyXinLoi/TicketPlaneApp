@@ -1,0 +1,7 @@
+{
+    "mock-server.settings.paths": {
+        "root": "d:\\Flutter_for_beginer\\TicketPlaneApp\\ticket_plane_app\\lib\\units\\mock_server",
+        "static": "",
+        "snapshots": "./snapshots"
+    }
+}

@@ -1,25 +1,44 @@
 name: ticket_plane_app
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
-  sdk: ^3.6.0
+    sdk: ^3.6.0
 
 dependencies:
-  flutter:
-    sdk: flutter
-  font_awesome_flutter: ^10.8.0
-  go_router: ^14.6.2
-  http: ^1.2.2
-  introduction_screen: ^3.1.14
+    connectivity_plus: ^6.0.3
+    flutter:
+        sdk: flutter
+    flutter_facebook_auth: ^7.1.1
+    font_awesome_flutter: ^10.8.0
+    get: ^4.6.6
+    go_router: ^14.6.2
+    google_sign_in: ^6.2.2
+    http: ^1.2.2
+    json_annotation: ^4.8.1
+    internet_connection_checker: ^1.0.0+1
+    introduction_screen: ^3.1.14
+    shared_preferences: ^2.3.4
+    firebase_auth: ^5.4.0
+    firebase_core: ^3.10.0
+    cloud_firestore: ^5.6.1
+    equatable: ^2.0.7
+    flutter_bloc: ^8.1.6
+    another_flushbar: ^1.12.30
+    flutter_html: ^3.0.0-beta.2
+    intl: ^0.19.0
+    local_auth: ^2.3.0
+    
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^5.0.0
+    flutter_test:
+        sdk: flutter
+    flutter_lints: ^5.0.0
+    build_runner: ^2.4.6
+    json_serializable: ^6.7.1
 
 flutter:
-  uses-material-design: true
-  assets:
-  - assets/images/
+    uses-material-design: true
+    assets:
+        - assets/images/
